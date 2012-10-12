@@ -39,6 +39,11 @@ class timetracker_admin{
         		'path' => 'admin/timetracker/projects'
         		);
         
+        $var[$section .'_3'] = array(
+        		'text' => 'Groups', 
+        		'path' => 'admin/timetracker/groups'
+        		);
+        
 
         return $var;
     }
@@ -50,7 +55,7 @@ class timetracker_admin{
         $variables['links'] = _menu_links($this->admin_links(),' | ');
     	//
     	$variables['content'] = 'administration index';
-    	return timetracker_view('default', $variables);  
+    	return _view('default', $variables);  
     }
     
     
@@ -60,9 +65,9 @@ class timetracker_admin{
         $variables['links'] = _menu_links($this->admin_links(),' | ');
     	
         // this form is located in the timetracker module file
-    	$output = drupal_render(drupal_get_form('timetracker_settings_form'));
+        $output = drupal_get_form('timetracker_settings_form');
     	$variables['content'] = $output;
-        return timetracker_view('default', $variables);  	  	
+        return _view('default', $variables);  	  	
     
     }
 	
@@ -93,132 +98,50 @@ class timetracker_admin{
 				array('data' => 'Operations', '' => '', 'colspan' => 2),
 				
 				);
-		//Create the Sql query. This uses various parts of Drupal 7's new DBTNG database abstraction layer.
-			
-		$query = db_select('timetracker_project_events', 'tt')
-			->extend('PagerDefault') 	//Pager Extender
-			->limit(10)				//10 results per page
-			->extend('TableSort')		//Sorting Extender
-			->orderByHeader($table_header)//Field to sort on is picked from $header
-			->fields ('tt', 
-				array(
-				  	  'id',
-				  	  'project_user_task', 
-				  	  'project_name',
-				  	  'user_id',
-				  	  'project_hours',
-				  	  'event_date',
-				  	  'created'));
-			
-		$result = $query
-			->execute();
 		
-		/*
+		$query = "SELECT id, project_user_task,project_name,user_id,project_hours,event_date,created FROM {timetracker_project_events} as tt";
+		$query .= tablesort_sql($table_header);
 		
-		//Create a list of headers for your Html table (see Drupal 7 docs for theme_table here
-			$header = array(
-				array('data' => 'Title', 'field' => 'title', 'sort' => 'asc'),
-				array('data' => 'Node ID', 'field' => 'nid'),
-				array('data' => 'Type', 'field' => 'type'),
-				array('data' => 'Created', 'field' => 'created'),
-				array('data' => 'Published'),
-				);
-			
-			//Create the Sql query. This uses various parts of Drupal 7's new DBTNG database abstraction layer.
-			
-			$query = db_select('node', 'n')
-						->condition('status', 1)	//Only published nodes, change condition as it suits you
-						->extend('PagerDefault') 	//Pager Extender
-							->limit(10)				//10 results per page
-						->extend('TableSort')		//Sorting Extender
-							->orderByHeader($header)//Field to sort on is picked from $header
-						->fields ('n', array (
-							'nid',
-							'title',
-							'type',
-							'created',
-							'status',
-						));
-			
-			$results = $query
-						->execute();
-			
-			$rows = array();	
-			foreach ($results as $node) {
-				$rows[] = array(
-							'data' => array(
-								  l($node->title, 'node/'. $node->nid .'/edit'),
-								  $node->nid,
-								  $node->type,
-								  format_date($node->created),
-								  $node->status
-							)
-				);
-			}
-			
-			//Theme the html table
-			$html = theme('table', 
-						array(
-							'header' => $header,
-							'rows'=>$rows,
-							'caption' => 'Creating Drupal 7 style tables',	//Optional Caption for the table
-							'sticky' => TRUE,						//Optional to indicate whether the table headers should be sticky
-							'empty' => 'No nodes created...',		//Optional empty text for the table if resultset is empty
-						)
-					);
-			
-			//Append pager
-			$html .= theme('pager',
-						array(
-							'tags' => array()
-						)
-					);
-					
-			return ($html);
-					
-					
-		*/	
+		$limit = 10;
+		
+		//generate a paged query
+		$result = pager_query($query, $limit);
 		
 		// Result is returned as a iterable object that returns a stdClass object on each iteration
-		
-		foreach ($result as $record)
-		{
-				  
-				  $row_data[] = array(
-						  'data' => array(
-						  	  $record->id,
-						  	  $record->project_user_task, 
-						  	  $record->project_name,
-						  	  $record->user_id,
-						  	  $record->project_hours,
-						  	  $record->event_date,
-						  	  $record->created,
-						  	  l(t('delete'), '', array('attributes' => array('class' => array('delete-time'), 'id' => 'del-' . $record->id))),
-						  	  l(t('update'), APP_MODULE .'/timetracker/update_time/'.$record->id, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $record->id))) 
-				  
-						  	  ),
-						  'id' => array('id' => 'row-'.$record->id),
-						  );
+		if($result){
+			//set up data array
+			$data = '';
+			$i = 1;
+			//your basic while loop to get the data
+			while($record = db_fetch_object($result))
+			{				  
+					  $row_data[] = array(
+							  'data' => array(
+								  $record->id,
+								  $record->project_user_task, 
+								  $record->project_name,
+								  $record->user_id,
+								  $record->project_hours,
+								  $record->event_date,
+								  $record->created,
+								  l(t('delete'), '', array('attributes' => array('class' => array('delete-time'), 'id' => 'del-' . $record->id))),
+								  l(t('update'), APP_MODULE .'/timetracker/update_time/'.$record->id, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $record->id))) 
+					  
+								  ),
+							  'id' => array('id' => 'row-'.$record->id),
+							  );
+			}
 		}
 		
 		// Format and print out the table.
-		$output = theme('table', array(
-			'header' => $table_header,
-			'rows' => $row_data,
-			'id' => 'table-articles',
-			'class' => 'articles',
-		  ));
+		$output = theme('table',$table_header, $row_data);
 		
-		$output .= theme('pager',
-						array(
-							'tags' => array()
-						)
-					);
-    	
+		$output .= theme('pager', NULL, $limit, 0);
+		  	
     	// monthly totals for this user by project
         $variables['content'] = $output;
 
-        return timetracker_view('default', $variables);
+        return _view('default', $variables);
     }
     
     /**
@@ -239,30 +162,10 @@ class timetracker_admin{
     	// admin links
         $variables['links'] = _menu_links($this->admin_links(),' | ');
         
-        // show projects add form 
-        $output = drupal_render(drupal_get_form('timetracker_projects_add_'));
         
-        $output .= '<div id="project-list">' . t('A list of available projects and their descriptions:') . '</div>';
-    	
     	// get vocabulary as options list
-		$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
-		$tree = taxonomy_get_tree($voc->vid,0,NULL,true);
-				
-		
-		/*  
-		
-		id 	int(10) 			No 	None 	auto_increment 	Browse distinct values 	Change 	Drop 	Primary 	Unique 	Index 	Fulltext
-		project_group_id 	int(10) 			No 	None 		Browse distinct values 	Change 	Drop 	Primary 	Unique 	Index 	Fulltext
-		project_id 	int(10) 			Yes 	NULL 		Browse distinct values 	Change 	Drop 	Primary 	Unique 	Index 	Fulltext
-		project_name 	varchar(255) 	utf8_general_ci 		Yes 	NULL 		Browse distinct values 	Change 	Drop 	Primary 	Unique 	Index 	Fulltext
-		project_external_key 	varchar(32) 	utf8_general_ci 		Yes 	NULL 		Browse distinct values 	Change 	Drop 	Primary 	Unique 	Index 	Fulltext
-		project_desc 	varchar(255) 	utf8_general_ci 		Yes 	NULL 		Browse distinct values 	Change 	Drop 	Primary 	Unique 	Index 	Fulltext
-		project_hours 	int(4) 			Yes 	NULL 		Browse distinct values 	Change 	Drop 	Primary 	Unique 	Index 	Fulltext
-		created 	datetime 			No 	None 		Browse distinct values 	Change 	Drop 	Primary 	Unique 	Index 	Fulltext
-		changed 	datetime 			No 	None 		Browse distinct values 	Change 	Drop 	Primary 	Unique 	Index 	Fulltext
-		vid
-		
-		*/
+		$voc = variable_get('timetracker_projects', 0);
+		$tree = taxonomy_get_tree($voc,0,NULL,true);
 		
 		$table_header = array(
 				array('data' => 'ID', 'field' => 'tid', 'sort' => 'asc'),
@@ -276,98 +179,73 @@ class timetracker_admin{
 				array('data' => 'Operations', '' => '', 'colspan' => 2),
 				
 				);
-		//Create the Sql query. This uses various parts of Drupal 7's new DBTNG database abstraction layer.
+		
+		$query = "SELECT td.tid, td.name, td.description, tt.project_external_key, tt.created, tt.project_hours, g.project_group_name, g.project_group_prefix, s.* FROM 
+		{term_data} AS td 
+		LEFT JOIN {timetracker_projects} AS tt ON td.tid = tt.project_id 
+		LEFT JOIN {timetracker_project_groups} AS g ON g.project_group_id = tt.project_group_id 
+		LEFT JOIN {timetracker_project_status} AS s ON tt.status = s.id WHERE td.vid = $voc";
+		
+		$query .= tablesort_sql($table_header);
+		
+		$limit = 10;
+		
+		//generate a paged query
+		$result = pager_query($query, $limit);
 			
-		$query = db_select('taxonomy_term_data', 'td')
-		/*
-		$query->innerJoin('timetracker_projects', 'tt', 'td.tid = tt.project_id');
-		$query->join('timetracker_project_groups', 'g', 'g.project_group_id = tt.project_group_id'); //JOIN node with users
-		$query->join('timetracker_project_status', 's', 'tt.status = s.id'); //JOIN node with users
-						
-		$query->fields ('tt', 
-				array(
-				  	  'id',
-				  	  'project_group_id', 
-				  	  'project_id',
-				  	  'project_name',
-				  	  'project_external_key',
-				  	  'project_desc',
-				  	  'project_hours',
-				  	  'created',
-				  	  'status'))
-			->fields ('g', array('project_group_name', 'project_group_prefix'))
-			->fields ('s')*/
-			->condition('td.vid', $voc->vid, '=')
-			->extend('PagerDefault')
-			->limit(10)
-			->extend('TableSort')
-			->orderByHeader($table_header)
-			->fields ('td',array('tid', 'name', 'description'));
-		$query->leftJoin('timetracker_projects', 'tt', 'td.tid = tt.project_id');
-		$query->leftJoin('timetracker_project_groups', 'g', 'g.project_group_id = tt.project_group_id');
-		$query->leftJoin('timetracker_project_status', 's', 'tt.status = s.id');
-		$query->fields ('tt', array('project_external_key', 'created', 'project_hours'));
-		$query->fields ('g', array('project_group_name', 'project_group_prefix'));
-		$query->fields ('s');
+		// Result is returned as a iterable object that returns a stdClass object on each iteration
+		if($result){
+			//set up data array
+			$data = '';
+			$i = 1;
+			//your basic while loop to get the data
+			while($record = db_fetch_object($result))
+			{				
 			
-		$result = $query
-			->execute();
-						
-			
-		foreach ($result as $record)
-		{
-			
-			/* get the total number of hours for each project */
-			$hours_total = 0;
-			
-			$query_hours = db_select('timetracker_project_events', 'e')
-				->condition('project_id',$record->tid,'=')
-				->fields('e', array('project_hours'));
-				$hours = $query_hours
-					->execute();
+				/* get the total number of hours for each project */
+				$hours_total = 0;
+				
+				$hours = db_query("SELECT e.project_hours FROM {timetracker_project_events} AS e WHERE project_id =" . $record->tid);
 					
-			foreach($hours as $event)
-			{
-				$hours_total += $event->project_hours;
+						
+				while($event = db_fetch_object($hours))
+				{
+					$hours_total += $event->project_hours;
+				}
+				
+				//$output .= print_r($record,1);
+				$row_data[] = array(
+					'data' => array(
+						$record->tid,
+						$record->project_group_name, 
+						$record->name,
+						$record->project_group_prefix . '-' . $record->project_external_key,
+						$record->description,
+						$hours_total,
+						$record->created,
+						$record->status_name,
+						l(t('edit'), 'admin/'. APP_MODULE .'/project_edit/'.$record->tid, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $record->tid))) 
+						),
+						'id' => 'row-'.$record->tid,
+						);
+			
 			}
-			
-			//$output .= print_r($record,1);
-			$row_data[] = array(
-				'data' => array(
-					$record->tid,
-					$record->project_group_name, 
-					$record->name,
-					$record->project_group_prefix . '-' . $record->project_external_key,
-					$record->description,
-					$hours_total,
-					$record->created,
-					$record->status_name,
-					l(t('edit'), 'admin/'. APP_MODULE .'/project_edit/'.$record->tid, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $record->tid))) 
-					),
-					'id' => array(
-						'id' => 'row-'.$record->tid),
-					);
-			
 		}
 		
-		//Format and print out the table.
+		// show projects add form 
+        $output = drupal_get_form('timetracker_projects_add_');
+        
+        $output .= '<div id="project-list">' . t('A list of available projects and their descriptions:') . '</div>';
+    	
 		
-		$output .= theme('table', array(
-			'header' => $table_header,
-			'rows' => $row_data,
-			'id' => 'table-articles',
-			'class' => 'articles',
-		  ));
+		// Format and print out the table.
+		$output .= theme('table',$table_header, $row_data);
 		
-		$output .= theme('pager',
-						array(
-							'tags' => array()
-						)
-					);
+		$output .= theme('pager', NULL, $limit, 0);
                
     	$variables['content'] = $output;
        
-        return timetracker_view('default', $variables);
+        return _view('default', $variables);
     }
     
     function project_edit()
@@ -488,6 +366,78 @@ class timetracker_admin{
 		 
 		drupal_goto('admin/timetracker/project_edit/'. $term->tid);
 		
+    }
+    
+    function groups($extend = NULL)
+    {
+        // title for content
+    	$variables['title'] = t('');
+
+    	
+    	// admin links
+        $variables['links'] = _menu_links($this->admin_links(),' | ');
+        
+        
+    	// get vocabulary as options list
+		$voc = variable_get('timetracker_projects', 0);
+		$tree = taxonomy_get_tree($voc,0,NULL,true);
+		
+		$table_header = array(
+				array('data' => 'ID', 'field' => 'project_group_id', 'sort' => 'asc'),
+				array('data' => 'Name', 'field' => 'project_group_name'),
+				array('data' => 'Prefix Code', 'field' => 'project_group_prefix'),
+				array('data' => 'Description', 'field' => 'project_group_description'),
+				
+				);
+		
+		$query = "SELECT gr.project_group_id, gr.project_group_name, gr.project_group_description, gr.project_group_prefix FROM 
+		{timetracker_project_groups} AS gr";
+		
+		$query .= tablesort_sql($table_header);
+		
+		$limit = 10;
+		
+		//generate a paged query
+		$result = pager_query($query, $limit);
+			
+		// Result is returned as a iterable object that returns a stdClass object on each iteration
+		if($result){
+			//set up data array
+			$data = '';
+			$i = 1;
+			//your basic while loop to get the data
+			while($record = db_fetch_object($result))
+			{				
+			
+				//$output .= print_r($record,1);
+				$row_data[] = array(
+					'data' => array(
+						$record->project_group_id,
+						$record->project_group_name, 
+						$record->project_group_prefix,
+						$record->description,
+						l(t('edit'), 'admin/'. APP_MODULE .'/group_edit/'.$record->tid, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $record->tid))) 
+						),
+						'id' => 'row-'.$record->project_group_id,
+						);
+			
+			}
+		}
+		
+		// show projects add form 
+        $output = drupal_get_form('timetracker_groups_add_');
+        
+        $output .= '<div id="project-list">' . t('A list of available groups and their descriptions:') . '</div>';
+    	
+		
+		// Format and print out the table.
+		$output .= theme('table',$table_header, $row_data);
+		
+		$output .= theme('pager', NULL, $limit, 0);
+               
+    	$variables['content'] = $output;
+       
+        return _view('default', $variables);
     }
     
     

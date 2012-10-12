@@ -42,108 +42,6 @@ spl_autoload_register('_autoload');
 *
 */
 
-/**
-* ============================= Drupal hooks ===================================
-* 
-* This area should be keep to a minimum to  reduce the noise from Drupal. 
-* 
-*/
-
-/**
-*
-* Call to the Drupal hook_menu
-*
-* Each call to a function from a path is exchanged through a single Class loader
-* that loads the Class file and calls the Class methods. In most cases the called
-* Class is a controller
-*
-* path and file arguments are not used here because we want to use a single dynamic
-* file and class loader
-*
-* formatting only allows page activation under prefixed [app_trigger]/[controller]/[action]
-*
-* access is always open with the access callback set to true. Access control is
-* left to timetracker_access().
-* @return array
-*
-*/
-
-
-function timetracker_permission() {
-  return array(
-    'use timetracker' => array(
-      'title' => t('Use timetracker'), 
-      'description' => t('Use the time management and project page.'),
-    ),
-    'administer timetracker' => array(
-      'title' => t('Administer timetracker'), 
-      'description' => t('Administer the projects and reports.'),
-    ),
-  );
-}
-
-function timetracker_menu()
-{
- 
-    $items[ APP_MODULE . '/%/%' ] = array(
-        'page callback' => APP_MODULE . '_controller',
-        'page arguments' => array(1, 2),
-        'access arguments' => array('use timetracker'),
-        'type' => MENU_CALLBACK,
-
-    );   
-    
-    // Need at least one child item before your section will appear.
-	  $items['admin/'. APP_MODULE .''] = array(
-		'title' => 'Timetracker administration',
-		'description' => 'Settings for taxonomy and other configuration to be used in project listings',
-		'page callback' => APP_MODULE .'_controller',
-		'access arguments' => array('administer timetracker'),
-	  );
-	  
-	// Need at least one child item before your section will appear.
-	  $items['admin/'. APP_MODULE .'/reports'] = array(
-		'title' => 'Timetracker reports',
-		'description' => 'Settings for taxonomy and other configuration to be used in project listings',
-		'page callback' => APP_MODULE .'_controller',
-		'access arguments' => array('administer timetracker'),
-		'type' => MENU_LOCAL_TASK,
-	  );
-	  
-	// Need at least one child item before your section will appear.
-	  $items['admin/'. APP_MODULE .'/settings'] = array(
-		'title' => 'Timetracker settings',
-		'description' => 'Settings for taxonomy and other configuration to be used in project listings',
-		'page callback' => APP_MODULE .'_controller',
-		'access arguments' => array('administer timetracker'),
-	  ); 
-	  
-    return $items;
-
-} 
-
-/**
-* implement Drupal hook_taxonomy_term_delete()
-* using this hook to delete term information that is attached in the timetracker project table
-* the table is used because terms do not have fields and we need to store more information
-* to use terms as project containers
-*/
-
-function timetracker_taxonomy_term_delete($term)
-{
-	$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
-	
-	// compare the term vid to the vid of the vocabulary chosen in the timetracker settings
-	if($term->vid == $voc->vid)
-	{
-		print $term->tid;
-		$deleted = db_delete('timetracker_projects')
-			->condition('project_id', $term->tid)
-			->execute();
-			print t('Project "') . $term->name . t('" deleted.');
-	}
-}
-
 
 /**
 * =================================== CONTROLLER ===============================
@@ -197,7 +95,7 @@ function _autoload($class)
 
 
 
-function timetracker_controller()
+function _controller()
 {
 
 	$class =  strtolower(arg(1));
@@ -265,7 +163,7 @@ function timetracker_controller()
 */
 
 
-function timetracker_model( $model, $mode, $parameter = NULL )
+function _model( $model, $mode, $parameter = NULL )
 {	
 	$model_path = DOCROOT . '/_models' . '/' . $model . '.model.inc';
     if(include_once($model_path))
@@ -301,7 +199,7 @@ function timetracker_model( $model, $mode, $parameter = NULL )
 */
 
 
-function timetracker_view($view, $variables = NULL, $output = NULL)
+function _view($view, $variables = NULL, $output = NULL)
 {
 
     $template_path = DOCROOT . '/_views' . '/' . $view . '.tpl.php';
@@ -326,11 +224,11 @@ function timetracker_view($view, $variables = NULL, $output = NULL)
         }
 
         // pre-load the tt child template output with variables
-       $output .= timetracker_render_template($template_path, $variables);
+       $output .= _render_template($template_path, $variables);
     }
 
     // output everything into a parent template. Drupals theme system page is the default
-   return $output;
+   print theme('page',$output);
 
 }
 
@@ -365,13 +263,112 @@ function _menu_links($menu, $separater = NULL, $template = NULL, $index = NULL)
 
 
 // Do our own render function because D7 adds the DRUPAL_ROOT which we don't need
-function timetracker_render_template($template_file, $variables)
+function _render_template($template_file, $variables)
 {
   extract($variables, EXTR_SKIP); // Extract the variables to a local namespace
   ob_start(); // Start output buffering
   include $template_file; // Include the template file
   return ob_get_clean(); // End buffering and return its contents
 }
+
+
+/* ============================= Drupal hooks and functions =================================== */
+
+/**
+*
+* Call to the Drupal hook_menu
+*
+* Each call to a function from a path is exchanged through a single Class loader
+* that loads the Class file and calls the Class methods. In most cases the called
+* Class is a controller
+*
+* path and file arguments are not used here because we want to use a single dynamic
+* file and class loader
+*
+* formatting only allows page activation under prefixed [app_trigger]/[controller]/[action]
+*
+* access is always open with the access callback set to true. Access control is
+* left to timetracker_access().
+* @return array
+*
+*/
+
+
+function timetracker_permission() {
+  return array(
+    'use timetracker' => array(
+      'title' => t('Use timetracker'), 
+      'description' => t('Use the time management and project page.'),
+    ),
+    'administer timetracker' => array(
+      'title' => t('Administer timetracker'), 
+      'description' => t('Administer the projects and reports.'),
+    ),
+  );
+}
+
+function timetracker_menu()
+{
+ 
+    $items[ APP_MODULE . '/%/%' ] = array(
+        'page callback' => '_controller',
+        'page arguments' => array(1, 2),
+        'access arguments' => array('use timetracker'),
+        'type' => MENU_CALLBACK,
+
+    );   
+    
+    // Need at least one child item before your section will appear.
+	  $items['admin/'. APP_MODULE .''] = array(
+		'title' => 'Timetracker administration',
+		'description' => 'Settings for taxonomy and other configuration to be used in project listings',
+		'page callback' => '_controller',
+		'access arguments' => array('administer timetracker'),
+	  );
+	  
+	// Need at least one child item before your section will appear.
+	  $items['admin/'. APP_MODULE .'/reports'] = array(
+		'title' => 'Timetracker reports',
+		'description' => 'Settings for taxonomy and other configuration to be used in project listings',
+		'page callback' => '_controller',
+		'access arguments' => array('administer timetracker'),
+		'type' => MENU_LOCAL_TASK,
+	  );
+	  
+	// Need at least one child item before your section will appear.
+	  $items['admin/'. APP_MODULE .'/settings'] = array(
+		'title' => 'Timetracker settings',
+		'description' => 'Settings for taxonomy and other configuration to be used in project listings',
+		'page callback' => '_controller',
+		'access arguments' => array('administer timetracker'),
+	  ); 
+	  
+    return $items;
+
+} 
+
+/**
+* implement Drupal hook_taxonomy_term_delete()
+* using this hook to delete term information that is attached in the timetracker project table
+* the table is used because terms do not have fields and we need to store more information
+* to use terms as project containers
+*/
+
+function timetracker_taxonomy_term_delete($term)
+{
+	$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
+	
+	// compare the term vid to the vid of the vocabulary chosen in the timetracker settings
+	if($term->vid == $voc->vid)
+	{
+		print $term->tid;
+		$deleted = db_delete('timetracker_projects')
+			->condition('project_id', $term->tid)
+			->execute();
+			print t('Project "') . $term->name . t('" deleted.');
+	}
+}
+
 
 function timetracker_mytime_()
 {
@@ -570,19 +567,20 @@ function timetracker_updatetime_()
 	
 function timetracker_settings_form()
 {
-		$vids = db_query("SELECT machine_name, name  FROM {taxonomy_vocabulary}")->fetchAll();
-		foreach ($vids as $key => $voc)
+		$vids = db_query("SELECT vid, name  FROM {vocabulary}");
+		while($voc = db_fetch_object($vids))
 		{
-			$projects[$voc->machine_name] = $voc->name;
+			$projects[$voc->vid] = $voc->name;
 		}
 		
 		$form['selected'] = array(
 				'#type' => 'select',
 				'#title' => t('Project Category'),
 				'#options' => $projects,
-				'#default_value' => variable_get('timetracker_projects', 'projects'),
+				'#default_value' => variable_get('timetracker_projects', 1),
 				'#description' => t('Set this to <em>Yes</em> if you would like this category to be selected by default.'),
 			  );
+		
 		$form['submit'] = array(
 			'#type' => 'submit', 
 			'#value' => 'Submit',
@@ -613,8 +611,9 @@ function timetracker_projects_add_()
 	if(isset($pid) && is_numeric($pid))
 	{		
 		$op = t('Update project');
-		$project = db_query("SELECT * FROM {timetracker_projects} WHERE project_id= :pid", array(':pid' => $pid))->fetchAll();
+		$project = db_fetch_array(db_query("SELECT * FROM {timetracker_projects} WHERE project_id=" .  $pid));
 		$db_op = 'project_update';
+		
 		$project = (array)$project[0];
 		
 		$form['add']['project_id'] = array(
@@ -631,11 +630,11 @@ function timetracker_projects_add_()
 	}
 	
 	
-	
+	$groups = array();
 	
 	// get the groups available
-	$list = db_query("SELECT *  FROM {timetracker_project_groups}")->fetchAll();
-	foreach ($list as $key => $group)
+	$list = db_query("SELECT * FROM {timetracker_project_groups}");
+	while($group = db_fetch_object($list))
 	{
 		$groups[$group->project_group_id] = $group->project_group_name;
 	}
@@ -678,7 +677,7 @@ function timetracker_projects_add_()
 		'#description' => t('Projects are automatically open unless changed here.')
 	);
 			  
-	$form['submit'] = array(
+	$form['add']['submit'] = array(
 		'#type' => 'submit', 
 		'#value' => $op,
 		'#submit' => array('Submit'),
@@ -785,6 +784,82 @@ function timetracker_projects_edit_()
 	return $form;
 	
 }
+
+function timetracker_groups_add_()
+{
+	global $user;
+	
+	
+	// if we are on the edit page fill the values
+	$gid = check_plain(arg(3));
+	
+	$form['add'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Add a group'),
+		'#collapsible' => TRUE,
+		'#collapsed' => TRUE,
+
+		);
+	
+	if(isset($gid) && is_numeric($gid))
+	{		
+		$op = t('Update group');
+		$group = db_fetch_array(db_query("SELECT * FROM {timetracker_project_groups} WHERE group_id=" .  $pid));
+		$db_op = 'group_update';
+		
+		$group = (array)$group[0];
+		
+		$form['add']['group_id'] = array(
+			'#type' => 'hidden', 
+			'#value' => $pid,
+		);
+		
+	}
+	else
+	{
+		//
+		$op = t('Add a group');
+		$db_op = 'group_save';
+	}
+	
+	
+	$group = array();
+	
+	
+    $form['add']['group_name'] = array(
+		'#type' => 'textfield', 
+		'#title' => t('Group name'),
+		'#default_value' => isset($group['project_name']) ? $group['project_name'] : '',
+	);
+	
+	
+	$form['add']['group_prefix'] = array(
+		'#type' => 'textfield', 
+		'#title' => t('Group prefix'),
+		'#default_value' => isset($group['project_external_key']) ? $group['project_external_key'] : '',
+		'#description' => t('This is the prefix for the project code and must be unique. Example: if your project is named Admin then example: "ADM"')
+	);
+	
+	$form['add']['project_desc'] = array(
+		'#type' => 'textfield', 
+		'#default_value' => isset($group['project_desc']) ? $group['project_desc'] : '',
+		'#title' => t('Description'),
+	);
+	
+			  
+	$form['add']['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => $op,
+		'#submit' => array('Submit'),
+	);
+			  
+	$form['#action'] = url('admin/timetracker/'. $db_op);// admin class
+			  
+			  
+	return $form;
+	
+}
+
     
     	
 

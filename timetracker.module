@@ -356,15 +356,15 @@ function timetracker_menu()
 
 function timetracker_taxonomy_term_delete($term)
 {
-	$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
+	$voc = variable_get('timetracker_projects', 0);
 	
 	// compare the term vid to the vid of the vocabulary chosen in the timetracker settings
 	if($term->vid == $voc->vid)
 	{
 		print $term->tid;
-		$deleted = db_delete('timetracker_projects')
-			->condition('project_id', $term->tid)
-			->execute();
+		$delete_project = db_query("DELETE FROM {timetracker_projects} WHERE project_id=%d", array($term->tid));
+		$delete_term = db_query("DELETE FROM {taxonomy_term_data} WHERE tid=%d", array($term->tid));
+		
 			print t('Project "') . $term->name . t('" deleted.');
 	}
 }
@@ -382,7 +382,10 @@ function timetracker_mytime_()
 				$terms[$term->tid] = $term->name;
 			}
 			
-			ksort($terms);
+			if(!empty($terms))
+			{
+				ksort($terms);
+			}
 			
 			  $form['user_task'] = array(
 				'#type' => 'textfield', 
@@ -514,11 +517,7 @@ function timetracker_myreports_()
 	$project = $tids[0];
 	
 	$result = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC', array($user->uid, $project));
-				
-	// Result is returned as a iterable object that returns a stdClass object on each iteration
-			
-    
-    
+	  
     /* form with table display */
     
 			  $form['my_projects_id'] = array(
@@ -573,7 +572,7 @@ function timetracker_updatetime_()
 	
 }
 	
-function timetracker_settings_form()
+function timetracker_settings_form_()
 {
 		$vids = db_query("SELECT vid, name  FROM {vocabulary}");
 		while($voc = db_fetch_object($vids))
@@ -585,7 +584,7 @@ function timetracker_settings_form()
 				'#type' => 'select',
 				'#title' => t('Project Category'),
 				'#options' => $projects,
-				'#default_value' => variable_get('timetracker_projects', 1),
+				'#default_value' => variable_get('timetracker_projects', 0),
 				'#description' => t('Set this to <em>Yes</em> if you would like this category to be selected by default.'),
 			  );
 		
@@ -597,14 +596,14 @@ function timetracker_settings_form()
 		$form['#action'] = url('timetracker/admin/timetracker/settings_save');
 		
 		return $form;
-    	//$output = '<pre>' . print_r($vids, 1) . '</pre>';
+    	
 }
+
 
 function timetracker_projects_add_()
 {
 	global $user;
-	
-	
+		
 	// if we are on the edit page fill the values
 	$pid = check_plain(arg(3));
 	
@@ -619,7 +618,7 @@ function timetracker_projects_add_()
 	if(isset($pid) && is_numeric($pid))
 	{		
 		$op = t('Update project');
-		$project = db_fetch_array(db_query("SELECT * FROM {timetracker_projects} WHERE project_id=" .  $pid));
+		$project = db_fetch_array(db_query("SELECT * FROM {timetracker_projects} WHERE project_id=%d", array($pid)));
 		$db_op = 'project_update';
 		
 		$project = (array)$project[0];
@@ -636,26 +635,24 @@ function timetracker_projects_add_()
 		$op = t('Add project');
 		$db_op = 'project_save';
 	}
-	
-	
+		
 	$groups = array();
 	
 	// get the groups available
 	$list = db_query("SELECT * FROM {timetracker_project_groups}");
+	
 	while($group = db_fetch_object($list))
 	{
 		$groups[$group->project_group_id] = $group->project_group_name;
 	}
-	
-	
+		
 	
     $form['add']['project_name'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Project name'),
 		'#default_value' => isset($project['project_name']) ? $project['project_name'] : '',
 	);
-	
-	
+		
 	$form['add']['project_group'] = array(
 		'#type' => 'select',
 		'#options' => $groups,
@@ -692,7 +689,55 @@ function timetracker_projects_add_()
 	);
 			  
 	$form['#action'] = url('admin/timetracker/'. $db_op);// admin class
+			  			  
+	return $form;
+	
+}
+
+function timetracker_projects_category_add_()
+{
+	global $user;	
+	
+	// if we are on the edit page fill the values
+	$pid = check_plain(arg(3));
+	$op = t('add_project_category');
+	$db_op = 'project_category_save';
+	
+	
+	$form['add'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Add a category'),
+		'#collapsible' => TRUE,
+		'#collapsed' => TRUE,
+		'#description' => t('Add a new category to the list of categories below.')
+
+		);
+	
+    $form['add']['project_category_name'] = array(
+		'#type' => 'textfield', 
+		'#title' => t('Project Category'),
+		'#default_value' => '',
+	);
+
+	$form['add']['project_category_machine_name'] = array(
+		'#type' => 'textfield', 
+		'#title' => t('Project Machine Name'),
+		'#default_value' => '',
+	);	
+	
+	$form['add']['project_category_description'] = array(
+		'#type' => 'textfield', 
+		'#default_value' => '',
+		'#title' => t('Description'),
+	);
 			  
+	$form['add']['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => $op,
+		'#submit' => array('Submit'),
+	);
+			  
+	$form['#action'] = url('admin/timetracker/'. $db_op);// admin class			  
 			  
 	return $form;
 	
@@ -701,35 +746,28 @@ function timetracker_projects_add_()
 function timetracker_projects_edit_()
 {
 	global $user;
-	
-	
+		
 	// if we are on the edit page fill the values
 	$pid = check_plain(arg(3));
 	
-	$query = db_select('taxonomy_term_data', 'td')
-		
-			->condition('tid', $pid, '=')
-			->fields ('td',array('tid', 'name', 'description'));
-		$query->leftJoin('timetracker_projects', 'tt', 'td.tid = tt.project_id');
-		$query->leftJoin('timetracker_project_groups', 'g', 'g.project_group_id = tt.project_group_id');
-		$query->leftJoin('timetracker_project_status', 's', 'tt.status = s.id');
-		$query->fields ('tt', array('project_external_key', 'created', 'project_hours'));
-		$query->fields ('g', array('project_group_name', 'project_group_prefix'));
-		$query->fields ('s');
-			
-		$project = (array)$query->execute()->fetchObject();
-		//print_r($project);
+	$query = db_query("SELECT td.tid, td.name, td.description, tt.project_external_key, tt.created, tt.project_hours, g.project_group_name, g.project_group_prefix, s.* FROM 
+		{term_data} AS td 
+		LEFT JOIN {timetracker_projects} AS tt ON td.tid = tt.project_id 
+		LEFT JOIN {timetracker_project_groups} AS g ON g.project_group_id = tt.project_group_id 
+		LEFT JOIN {timetracker_project_status} AS s ON tt.status = s.id WHERE td.tid =%d", array( $pid ));
+	
+	$project = (array)$query->execute()->fetchObject();
 	
 	// get the groups available
-	$list = db_query("SELECT *  FROM {timetracker_project_groups}")->fetchAll();
-	foreach ($list as $key => $group)
+	$list = db_query("SELECT * FROM {timetracker_project_groups}");
+	while ($group = db_fetch_object($group))
 	{
 		$groups[$group->project_group_id] = $group->project_group_name;
 	}
 	
 	// get the available status
-	$type = db_query("SELECT * FROM {timetracker_project_status}")->fetchAll();
-	foreach ($type as $key => $status)
+	$type = db_query("SELECT * FROM {timetracker_project_status}");
+	while ($type = db_fetch_object($status))
 	{
 		$types[$status->id] = $status->status_name;
 	}
@@ -787,16 +825,14 @@ function timetracker_projects_edit_()
 	);
 			  
 	$form['#action'] = url('admin/timetracker/project_update');// admin class
-			  
-			  
+			  			  
 	return $form;
 	
 }
 
 function timetracker_groups_add_()
 {
-	global $user;
-	
+	global $user;	
 	
 	// if we are on the edit page fill the values
 	$gid = check_plain(arg(3));
@@ -812,7 +848,7 @@ function timetracker_groups_add_()
 	if(isset($gid) && is_numeric($gid))
 	{		
 		$op = t('Update group');
-		$group = db_fetch_array(db_query("SELECT * FROM {timetracker_project_groups} WHERE group_id=" .  $pid));
+		$group = db_fetch_array(db_query("SELECT * FROM {timetracker_project_groups} WHERE group_id=%d",array($pid)));
 		$db_op = 'group_update';
 		
 		$group = (array)$group[0];
@@ -828,18 +864,15 @@ function timetracker_groups_add_()
 		//
 		$op = t('Add a group');
 		$db_op = 'group_save';
-	}
-	
+	}	
 	
 	$group = array();
-	
-	
+		
     $form['add']['group_name'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Group name'),
 		'#default_value' => isset($group['project_name']) ? $group['project_name'] : '',
-	);
-	
+	);	
 	
 	$form['add']['group_prefix'] = array(
 		'#type' => 'textfield', 
@@ -853,8 +886,7 @@ function timetracker_groups_add_()
 		'#default_value' => isset($group['project_desc']) ? $group['project_desc'] : '',
 		'#title' => t('Description'),
 	);
-	
-			  
+				  
 	$form['add']['submit'] = array(
 		'#type' => 'submit', 
 		'#value' => $op,
@@ -862,8 +894,7 @@ function timetracker_groups_add_()
 	);
 			  
 	$form['#action'] = url('admin/timetracker/'. $db_op);// admin class
-			  
-			  
+			  			  
 	return $form;
 	
 }

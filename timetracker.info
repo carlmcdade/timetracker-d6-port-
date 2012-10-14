@@ -3,6 +3,8 @@ description = Project time management and tasking
 package = Time Tracker modules
 core = 6.x 
 
+dependencies[] = "taxonomy"
+
 version = "6.x"
 core = "6.x"
 project = "timetracker"

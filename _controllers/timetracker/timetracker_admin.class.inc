@@ -65,7 +65,8 @@ class timetracker_admin{
         $variables['links'] = _menu_links($this->admin_links(),' | ');
     	
         // this form is located in the timetracker module file
-        $output = drupal_get_form('timetracker_settings_form');
+        $output = drupal_get_form('timetracker_projects_category_add_');
+        $output .= drupal_get_form('timetracker_settings_form_');
     	$variables['content'] = $output;
         return _view('default', $variables);  	  	
     
@@ -157,11 +158,9 @@ class timetracker_admin{
     {
         // title for content
     	$variables['title'] = t('');
-
     	
     	// admin links
-        $variables['links'] = _menu_links($this->admin_links(),' | ');
-        
+        $variables['links'] = _menu_links($this->admin_links(),' | ');       
         
     	// get vocabulary as options list
 		$voc = variable_get('timetracker_projects', 0);
@@ -184,7 +183,7 @@ class timetracker_admin{
 		{term_data} AS td 
 		LEFT JOIN {timetracker_projects} AS tt ON td.tid = tt.project_id 
 		LEFT JOIN {timetracker_project_groups} AS g ON g.project_group_id = tt.project_group_id 
-		LEFT JOIN {timetracker_project_status} AS s ON tt.status = s.id WHERE td.vid = $voc";
+		LEFT JOIN {timetracker_project_status} AS s ON tt.status = s.id WHERE td.vid =" . $voc;
 		
 		$query .= tablesort_sql($table_header);
 		
@@ -257,10 +256,10 @@ class timetracker_admin{
     	// admin links
         $variables['links'] = _menu_links($this->admin_links(),' | ');
         
-    	$output = drupal_render(drupal_get_form('timetracker_projects_edit_'));
+    	$output = drupal_get_form('timetracker_projects_edit_');
     	$variables['content'] = $output;
         
-        return timetracker_view('default', $variables);
+        return _view('default', $variables);
     }
     
     function project_save($tid=NULL)
@@ -268,12 +267,12 @@ class timetracker_admin{
     	/* we may need to know who by and when a project was created */
     	global $user;
     	
-    	$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));			
+    	$voc = variable_get('timetracker_projects', 0);			
 
     	$term = new stdClass();
 		$term->name = check_plain($_POST['project_name']);
 		$term->description = check_plain($_POST['project_desc']);
-		$term->vid = $voc->vid;
+		$term->vid = $voc;
 		
 		/* save to the Drupal taxonomy system which creates a term/project */
 		taxonomy_term_save($term);		
@@ -285,18 +284,18 @@ class timetracker_admin{
     			
     	$term_info = taxonomy_term_load($new);
     	
-    	$project_info = db_insert('timetracker_projects') // Table name no longer needs {}
-				->fields(array(
+    	$data = array(
 				  'project_id' => $new,
 				  'project_name' => $term_info->name,
 				  'project_desc' => $term_info->description,
 				  'project_external_key' => check_plain($_POST['project_external_key']),// since the terms do not have fields we add fk an external table and hold the extra information there
 				  'created' => date("Y-m-d H:i:s"),
 				  'changed' => date("Y-m-d H:i:s"),
-				  'vid' => $voc->vid
-				))
-				->execute();   	
+				  'vid' => $voc
+				);
 		
+		drupal_write_record('timetracker_projects', $data);
+				
 		print t('project added to timetracker'); 
     }
     
@@ -305,7 +304,7 @@ class timetracker_admin{
     	/* we may need to know who by and when a project was created */
     	global $user;
     	
-    	$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));			
+    	$voc = variable_get('timetracker_projects', 0);			
     	
     	
     	// update the taxonomy table
@@ -365,6 +364,34 @@ class timetracker_admin{
 		
 		 
 		drupal_goto('admin/timetracker/project_edit/'. $term->tid);
+		
+    }
+    
+    function project_category_save()
+    {
+    	//    	
+		$project = check_plain($_POST['project_category_name']);
+		$description = check_plain($_POST['project_category_description']); 
+		$machine_name = check_plain($_POST['project_category_machine_name']);
+    	
+    	$vocabulary = array(
+				'name' => $project, //Human readable name of the vocabulary
+				'module' => $machine_name,
+				'description' => $description,
+				'multiple' => 0, //set 1 to allow multiple selection
+				'required' => 0, //set 1 to make the terms mandatory to be selected
+				'hierarchy' => 0, //set 1 to allow and create hierarchy of the terms within the vocabulary
+				'relations' => 0, //set 1 to set and allow relation amongst multiple terms
+				'weight' => -9, //set the weight to display the vocabulary in the list
+				);
+
+		$voc = taxonomy_save_vocabulary($vocabulary); 
+		
+		variable_set('timetracker_projects', $voc ,0);	
+				
+		drupal_set_message(t('Project category added and set  to timetracker list'));
+		
+		drupal_goto('admin/timetracker/settings');
 		
     }
     

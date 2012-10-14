@@ -128,12 +128,10 @@ class timetracker{
 				);
     		
     		/* limit to five days */
-    		$result = db_query("SELECT *
-			FROM {timetracker_project_events} e WHERE e.user_id = :uid AND event_date = '" . $date. "' ORDER BY created DESC LIMIT 1", array(':uid' => $user->uid));
+    		$all = db_query("SELECT *
+			FROM {timetracker_project_events} e WHERE e.user_id = %d AND event_date = '" . $date. "' ORDER BY created DESC LIMIT 1", array($user->uid));
 			
-			$all = $result->fetchAll();
-			
-			foreach ($all as $key => $record)
+			while ($record = db_fetch_object($record))
 			{
 					  
 				  $output = '<tr class="event-added" id="recent-' . $record->id . '">' .
@@ -183,12 +181,11 @@ class timetracker{
 		
 		
 		/* show the user 5 of the most recent events added */
-    	$query = db_query('SELECT *
-			FROM {timetracker_project_events} e WHERE e.user_id = :uid ORDER BY created DESC LIMIT 5', array(':uid' => $user->uid));
+    	$recent = db_query('SELECT *
+			FROM {timetracker_project_events} e WHERE e.user_id = %d ORDER BY created DESC LIMIT 5', array($user->uid));
 		
-		$recent = $query->fetchAll();
 		
-		foreach ($recent as $re_record)
+		while ($re_record = db_fetch_object($recent))
 		{
 				  
 			$selected = '';  
@@ -257,16 +254,10 @@ class timetracker{
 				);
 		
 		/*  limit to five days */
-    	$result = db_query('SELECT *
-			FROM {timetracker_project_events} e WHERE e.user_id = :uid AND event_date <= date (now ()) ORDER BY event_date DESC, id DESC', array(':uid' => $user->uid));
+    	$all = db_query('SELECT *
+			FROM {timetracker_project_events} e WHERE e.user_id = %d AND event_date <= date (now ()) ORDER BY event_date DESC, id DESC', array($user->uid));
 				
-		
-		/* Result is returned as a iterable object that returns a stdClass object on each iteration */
-		$all = $result->fetchAll();
-		/* check to see if there are any entries for today */	
-		
-				
-		foreach ($all as $key => $record)
+		while ($record = db_fetch_object($all))
 		{
 			$groups[$record->event_date][] = $record;
 		}
@@ -349,12 +340,7 @@ class timetracker{
 		/* Format and print out the table. */
 		
 		
-		$output[] = theme('table', array(
-			'header' => $table_header,
-			'rows' => $row_data,
-			'id' => 'table-articles',
-			'class' => 'articles',
-		  )) . '</div>';
+		$output[] = theme('table', $table_header,$row_data) . '</div>';
 		
 		unset($row_data);
 		$total_hours = 0;

@@ -527,7 +527,7 @@ class timetracker{
     	
 		/* field headers */
     	$count = 0; 
-    	foreach($head = db_fetch_array( $result ){
+    	while($head = db_fetch_array( $result )){
     		foreach($head as $key => $value){
 			  $header[$key] = $key; 
 			}
@@ -542,7 +542,7 @@ class timetracker{
     	print implode(',', $header) ."\r\n";
     	
     	/* field values */
-    	foreach($record = db_fetch_array( $result ){
+    	while($record = db_fetch_array( $result )){
 			foreach($record as $value){
 			  $values[] = '"' . str_replace('"', '""', decode_entities(strip_tags($value))) . '"'; 
 			}

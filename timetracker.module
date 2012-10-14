@@ -373,8 +373,8 @@ function timetracker_taxonomy_term_delete($term)
 function timetracker_mytime_()
 {
 			// get vocabulary as options list
-			$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
-			$tree = taxonomy_get_tree($voc->vid,0,NULL,true);
+			$voc = variable_get('timetracker_projects', 'projects');
+			$tree = taxonomy_get_tree($voc,0,NULL,true);
 			
 			$terms = array(0 => ''); 
 			foreach ($tree as $key => $term)
@@ -429,8 +429,8 @@ function timetracker_mytime_()
 function timetracker_mytime_update_()
 {
 			// get vocabulary as options list
-			$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
-			$tree = taxonomy_get_tree($voc->vid,0,NULL,true);
+			$voc = variable_get('timetracker_projects', 0);
+			$tree = taxonomy_get_tree($voc,0,NULL,true);
 			
 			$terms = array(0 => ''); 
 			foreach ($tree as $key => $term)
@@ -438,7 +438,12 @@ function timetracker_mytime_update_()
 				$terms[$term->tid] = $term->name;
 			}
 			
-			ksort($terms);
+			if(!empty($terms))
+			{
+			
+				ksort($terms);
+			
+			}
 			
 			  $form['user_task'] = array(
 				'#type' => 'textfield', 
@@ -488,8 +493,9 @@ function timetracker_myreports_()
 	global $user;		
 	
 	// get vocabulary as options list
-	$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
-	$tree = taxonomy_get_tree($voc->vid,0,NULL,true);
+	$voc = variable_get('timetracker_projects', 0);
+	$tree = taxonomy_get_tree($voc,0,NULL,true);
+	$terms = array();
 	
 	
 			
@@ -499,15 +505,18 @@ function timetracker_myreports_()
 		$tids[] = $term->tid;
 	}
 	
-	ksort($terms);
+	if(!empty($terms))
+	{
+		ksort($terms);
+	
+	}
 		
 	$project = $tids[0];
 	
-	$result = db_query('SELECT *
-			FROM {timetracker_project_events} e WHERE e.user_id = :uid AND e.project_id = :pid ORDER BY created DESC', array(':uid' => $user->uid,':pid' => $project));
+	$result = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC', array($user->uid, $project));
 				
 	// Result is returned as a iterable object that returns a stdClass object on each iteration
-	$all = $result->fetchAll();		
+			
     
     
     /* form with table display */
@@ -528,12 +537,11 @@ function timetracker_myreports_()
 			  
 			  $form['#action'] = url('timetracker/timetracker/myreport');
 			  
-			  $markup = '<div id="output"></div>';
-			  //$markup .= '<pre>'.print_r($all, 1) . '</pre>'
+			  $markup = '<div id="output"></div>'; 
 				  
 			  $form['table'] = array(
-				'#type' => 'item', 
-				'#markup' => $markup,
+				'#type' => 'markup', 
+				'#value' => $markup,
 			  );
 			  
 	return $form;

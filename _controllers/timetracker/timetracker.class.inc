@@ -101,7 +101,7 @@ class timetracker{
 			$variables['content'] = $output;
 		}
     	
-    	return timetracker_view('default', $variables);	
+    	return _view('default', $variables);	
         
     }
     
@@ -114,8 +114,7 @@ class timetracker{
 		// get vocabulary as options list
 		$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
 		$tree = taxonomy_get_tree($voc->vid,0,NULL,true);
-			
-    	
+			   	
     	
     	if($today)
     	{
@@ -264,12 +263,9 @@ class timetracker{
 		
 		/* Result is returned as a iterable object that returns a stdClass object on each iteration */
 		$all = $result->fetchAll();
-		/* check to see if there are any entries for today */
+		/* check to see if there are any entries for today */	
 		
-		
-		
-		
-		
+				
 		foreach ($all as $key => $record)
 		{
 			$groups[$record->event_date][] = $record;
@@ -347,11 +343,7 @@ class timetracker{
 								'Total Hours:', 
 								array('data' => $total_hours , 'colspan' => 3, 'id' => 'total-user-hours')),
 							'id' => array('id' => 'total-row-'.$date),
-						);
-		
-		
-		
-		
+						);	
 		
 		
 		/* Format and print out the table. */
@@ -389,15 +381,15 @@ class timetracker{
         $variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
         
         /* form for choosing a project report */
-        $output = drupal_render(drupal_get_form('timetracker_myreports_'));
+        $output = drupal_get_form('timetracker_myreports_');
         
     	/* export csv */
-		$output .= '<div id="export-form" style="display:none">' . drupal_render(drupal_get_form('timetracker_myreports_csv_')) . '</div>';
+		$output .= '<div id="export-form" style="display:none">' . drupal_get_form('timetracker_myreports_csv_') . '</div>';
 			
     	/* monthly totals for this user by project */
         $variables['content'] = $output;
 
-        return timetracker_view('default', $variables);
+        return _view('default', $variables);
         
     }
     
@@ -418,19 +410,19 @@ class timetracker{
 			$project_info = taxonomy_term_load($project);
 			
 			$result = db_query('SELECT *
-				FROM {timetracker_project_events} e WHERE e.user_id = :uid AND e.project_id = :pid ORDER BY created DESC', array(':uid' => $user->uid,':pid' => $project));
+				FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC', array($user->uid, $project));
 				
     	}
     	else
     	{
     		//
     		$result = db_query('SELECT *
-				FROM {timetracker_project_events} e WHERE e.user_id = :uid AND event_date = date(now()) ORDER BY created DESC', array(':uid' => $user->uid));
+				FROM {timetracker_project_events} e WHERE e.user_id = %d AND event_date = date(now()) ORDER BY created DESC', array($user->uid));
 			
     	}
     		
 		/* Result is returned as a iterable object that returns a stdClass object on each iteration */
-		$all = $result->fetchAll();
+		
 		
 		$table_header = array(
 				array('data' => 'ID', '' => 'id', 'sort' => 'asc'),
@@ -440,7 +432,7 @@ class timetracker{
 				array('data' => 'Operations', '' => '', 'colspan' => 2),			
 				);
 		
-		foreach ($all as $record)
+		while ($all = db_fetch_object($record))
 		{
 				  
 				  $row_data[] = array(
@@ -486,12 +478,7 @@ class timetracker{
 		
 		
 		/* Format and print out the table. */
-		$output .= theme('table', array(
-			'header' => $table_header,
-			'rows' => $row_data,
-			'id' => 'table-articles',
-			'class' => 'articles',
-		  ));
+		$output .= theme('table', $table_header,$row_data);
 		
     					 
     	print $output;
@@ -512,7 +499,6 @@ class timetracker{
     	*/
     	
     	
-    	
     	global $user;
     	 	
     	$total_hours = 0;
@@ -531,18 +517,17 @@ class timetracker{
     	$filename = str_replace($not_used, "-", $filename);
     	
     	/*  set content headers */
-    	drupal_add_http_header('Content-Type', 'text/csv; utf-8', TRUE);
-    	drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    	drupal_set_header('Content-Type: text/csv');
+    	drupal_set_header('Content-Disposition: attachment; filename=' . $filename);
     	
     	$result = db_query('SELECT *
-			FROM {timetracker_project_events} e WHERE e.user_id = :uid AND e.project_id = :pid ORDER BY created DESC', array(':uid' => $user->uid,':pid' => $project));
+			FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC', array($user->uid, $project));
 				
 		/* Result is returned as a iterable object that returns a stdClass object on each iteration */
-		$all = $result->fetchAll();
     	
 		/* field headers */
     	$count = 0; 
-    	foreach($all as $x => $head){
+    	foreach($head = db_fetch_array( $result ){
     		foreach($head as $key => $value){
 			  $header[$key] = $key; 
 			}
@@ -557,7 +542,7 @@ class timetracker{
     	print implode(',', $header) ."\r\n";
     	
     	/* field values */
-    	foreach($all as $record){
+    	foreach($record = db_fetch_array( $result ){
 			foreach($record as $value){
 			  $values[] = '"' . str_replace('"', '""', decode_entities(strip_tags($value))) . '"'; 
 			}
@@ -580,8 +565,8 @@ class timetracker{
     	$output = '<div id="project-list">' . t('A list of available projects and their descriptions:') . '</div>';
     	
     	/* get vocabulary as options list */
-		$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
-		$tree = taxonomy_get_tree($voc->vid,0,NULL,true);
+		$voc = variable_get('timetracker_projects', 0);
+		$tree = taxonomy_get_tree($voc,0,NULL,true);
 				
 		foreach ($tree as $key => $term)
 		{
@@ -591,7 +576,7 @@ class timetracker{
     	/* show a list of the taxonomy terms used in the the vocbulary */
         $variables['content'] = $output;
         
-        return timetracker_view('default', $variables);
+        return _view('default', $variables);
     }
     
     

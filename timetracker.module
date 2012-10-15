@@ -700,7 +700,7 @@ function timetracker_projects_category_add_()
 	
 	// if we are on the edit page fill the values
 	$pid = check_plain(arg(3));
-	$op = t('add_project_category');
+	$op = t('Add project category');
 	$db_op = 'project_category_save';
 	
 	

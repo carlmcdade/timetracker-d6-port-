@@ -62,9 +62,8 @@ class timetracker_admin{
     function settings()
     {   	
     	// admin links
-        $variables['links'] = _menu_links($this->admin_links(),' | ');
-    	
-        // this form is located in the timetracker module file
+        
+        print variable_get('timetracker_projects', 0);
         $output = drupal_get_form('timetracker_projects_category_add_');
         $output .= drupal_get_form('timetracker_settings_form_');
     	$variables['content'] = $output;
@@ -82,23 +81,24 @@ class timetracker_admin{
 	
 	function reports($extend = NULL)
     {
-        // title for content
-    	$variables['title'] = t('Administer Reports');
-    	
-        // admin links
-        $variables['links'] = _menu_links($this->admin_links(),' | ');
         
-        $table_header = array(
-				array('data' => 'ID', 'field' => 'id', 'sort' => 'asc'),
-				array('data' => 'Task', 'field' => 'project_user_task'),
-				array('data' => 'Name', 'field' => 'project_name'),
-				array('data' => 'User', 'field' => 'user_id'),
-				array('data' => 'Hours', 'field' => 'project_hours'),
-				array('data' => 'Event', 'field' => 'event_date'),
-				array('data' => 'Created', 'field' => 'created'),
-				array('data' => 'Operations', '' => '', 'colspan' => 2),
-				
-				);
+		// title for content
+		$variables['title'] = t('Administer Reports');
+			
+		// admin links
+		$variables['links'] = _menu_links($this->admin_links(),' | ');
+			
+    	$table_header = array(
+					array('data' => 'ID', 'field' => 'id', 'sort' => 'asc'),
+					array('data' => 'Task', 'field' => 'project_user_task'),
+					array('data' => 'Name', 'field' => 'project_name'),
+					array('data' => 'User', 'field' => 'user_id'),
+					array('data' => 'Hours', 'field' => 'project_hours'),
+					array('data' => 'Event', 'field' => 'event_date'),
+					array('data' => 'Created', 'field' => 'created'),
+					array('data' => 'Operations', '' => '', 'colspan' => 2),
+					
+					);
 		
 		$query = "SELECT id, project_user_task,project_name,user_id,project_hours,event_date,created FROM {timetracker_project_events} as tt";
 		$query .= tablesort_sql($table_header);
@@ -109,7 +109,9 @@ class timetracker_admin{
 		$result = pager_query($query, $limit);
 		
 		// Result is returned as a iterable object that returns a stdClass object on each iteration
-		if($result){
+		if($result->num_rows > 0)
+		{
+			
 			//set up data array
 			$data = '';
 			$i = 1;
@@ -132,17 +134,28 @@ class timetracker_admin{
 							  'id' => array('id' => 'row-'.$record->id),
 							  );
 			}
+			
+			
+			// Format and print out the table.
+			$output = theme('table',$table_header, $row_data);
+			
+			$output .= theme('pager', NULL, $limit, 0);
+				
+			// monthly totals for this user by project
+			$variables['content'] = $output;
+	
+			return _view('default', $variables);
+			
+		}
+		else
+		{
+			
+			//
+			$variables['content'] = t('No entries have been made. ');    
+			return _view('default', $variables);
+			
 		}
 		
-		// Format and print out the table.
-		$output = theme('table',$table_header, $row_data);
-		
-		$output .= theme('pager', NULL, $limit, 0);
-		  	
-    	// monthly totals for this user by project
-        $variables['content'] = $output;
-
-        return _view('default', $variables);
     }
     
     /**
@@ -163,7 +176,15 @@ class timetracker_admin{
         $variables['links'] = _menu_links($this->admin_links(),' | ');       
         
     	// get vocabulary as options list
-		$voc = variable_get('timetracker_projects', 0);
+    	
+		$voc = variable_get('timetracker_projects', NULL);
+		if(!$voc)
+		{
+			//
+			$variables['content'] = t('No vocabulary has been assigned ' . l('set project category', 'admin/timetracker/settings'));
+       
+			return _view('default', $variables);
+		}
 		$tree = taxonomy_get_tree($voc,0,NULL,true);
 		
 		$table_header = array(
@@ -399,12 +420,10 @@ class timetracker_admin{
     {
         // title for content
     	$variables['title'] = t('');
-
-    	
+  	
     	// admin links
         $variables['links'] = _menu_links($this->admin_links(),' | ');
-        
-        
+                
     	// get vocabulary as options list
 		$voc = variable_get('timetracker_projects', 0);
 		$tree = taxonomy_get_tree($voc,0,NULL,true);
@@ -428,7 +447,7 @@ class timetracker_admin{
 		$result = pager_query($query, $limit);
 			
 		// Result is returned as a iterable object that returns a stdClass object on each iteration
-		if($result){
+		if($result->num_rows > 0){
 			//set up data array
 			$data = '';
 			$i = 1;
@@ -449,22 +468,34 @@ class timetracker_admin{
 						);
 			
 			}
+			// show projects add form 
+			$output = drupal_get_form('timetracker_groups_add_');
+			
+			$output .= '<div id="project-list">' . t('A list of available groups and their descriptions:') . '</div>';
+			
+			
+			// Format and print out the table.
+			$output .= theme('table',$table_header, $row_data);
+			
+			$output .= theme('pager', NULL, $limit, 0);
+				   
+			$variables['content'] = $output;
+		   
+			return _view('default', $variables);
+		}
+		else
+		{
+			
+			//
+			$output = drupal_get_form('timetracker_groups_add_');
+			$output .= t('No group entries have been made. ');
+			$variables['content'] =  $output;
+			
+			return _view('default', $variables);
+			
 		}
 		
-		// show projects add form 
-        $output = drupal_get_form('timetracker_groups_add_');
-        
-        $output .= '<div id="project-list">' . t('A list of available groups and their descriptions:') . '</div>';
-    	
 		
-		// Format and print out the table.
-		$output .= theme('table',$table_header, $row_data);
-		
-		$output .= theme('pager', NULL, $limit, 0);
-               
-    	$variables['content'] = $output;
-       
-        return _view('default', $variables);
     }
     
     

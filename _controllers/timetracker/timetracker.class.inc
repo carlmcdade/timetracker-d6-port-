@@ -64,11 +64,6 @@ class timetracker{
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/mvc.js');
     	
     	
-    	/*
-    		style sheets
-    	*/
-    	drupal_add_css(drupal_get_path('module', APP_MODULE ) . '/css/anytime.c.css');
-    	drupal_add_css(drupal_get_path('module', APP_MODULE ) . '/css/default.css');
     	
         if(variable_get('timetracker_projects', '') == '')
 		{

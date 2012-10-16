@@ -252,3 +252,8 @@ div.block:hover .edit {
 td[class*='cell-1-'] {width: 57px }
 
 td[class*='cell-2-'] {width: 287px }
+
+#features-menu li a.icon-timetracker-timetracker-user span.icon
+{
+	background-image: url('../images/timetracker_icon_a.png');	
+}

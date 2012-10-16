@@ -274,6 +274,16 @@ function _render_template($template_file, $variables)
 
 /* ============================= Drupal hooks and functions =================================== */
 
+
+function timetracker_init()
+{
+	/*
+   		style sheets
+    */
+    	drupal_add_css(drupal_get_path('module', APP_MODULE ) . '/css/anytime.c.css');
+    	drupal_add_css(drupal_get_path('module', APP_MODULE ) . '/css/default.css');
+}
+
 /**
 *
 * Call to the Drupal hook_menu
@@ -346,6 +356,38 @@ function timetracker_menu()
     return $items;
 
 } 
+
+/**
+ * Implementation of hook_menu_default_menu_links().
+ */
+function timetracker_menu_default_menu_links() {
+  $menu_links = array();
+
+  // Exported menu link: features:time_sheet/%
+  $menu_links['features:timetracker/timetracker/user%'] = array(
+    'menu_name' => 'features',
+    'link_path' => 'timetracker/timetracker/user',
+    'router_path' => 'timetracker/timetracker/user',
+    'link_title' => 'My time',
+    'options' => array(
+      'attributes' => array(
+        'class' => 'mytime_link',
+      ),
+    ),
+    'module' => 'system',
+    'hidden' => '0',
+    'external' => '0',
+    'has_children' => '0',
+    'expanded' => '0',
+    'weight' => '0',
+  );
+  // Translatables
+  // Included for use with string extractors like potx.
+  t('Timetracker');
+
+
+  return $menu_links;
+}
 
 /**
 * implement Drupal hook_taxonomy_term_delete()

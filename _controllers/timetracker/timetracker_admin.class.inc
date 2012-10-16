@@ -325,7 +325,7 @@ class timetracker_admin{
     	/* we may need to know who by and when a project was created */
     	global $user;
     	
-    	$voc = variable_get('timetracker_projects', 0);			
+    	$voc = variable_get('timetracker_projects', NULL);			
     	
     	
     	// update the taxonomy table
@@ -345,20 +345,20 @@ class timetracker_admin{
 						->execute()
 						->fetchObject();
 						
+		$project_id = db_fetch_object(db_query("SELECT * FROM {timetracker_projects} AS tp WHERE project_id=%d", array($term->tid)));						
 		
     	// update the timetracker project table
     	if(is_object($project_id))
     	{
-			$project_info = db_update('timetracker_projects') // Table name no longer needs {}
-					->fields(array(
-						'project_name' => $term->name,
-						'project_desc' => $term->description,
-						'project_group_id' => check_plain($_POST['project_group']),
-						'project_external_key' => check_plain($_POST['project_external_key']),// since the terms do not have fields we add fk an external table and hold the extra information there
-						'changed' => date("Y-m-d H:i:s"),
-						'status' => check_plain($_POST['project_status']),))
-					->condition('project_id', $term->tid, '=')					
-					->execute();
+			$project_info = db_query("UPDATE {timetracker_projects} 
+				SET (
+				project_name =" . $term->name . "," . 
+				"project_desc =" . $term->description  . "," . 
+				"project_group_id =" . check_plain($_POST['project_group']) . "," . 
+				"project_external_key =" . check_plain($_POST['project_external_key']) . ","  .
+				"changed =" . date("Y-m-d H:i:s") . "," . 
+				"status =" . check_plain($_POST['project_status']) . ")" .
+				" WHERE project_id= %d", array($term->tid));
 					
 			drupal_set_message( t('project updated'));
 					

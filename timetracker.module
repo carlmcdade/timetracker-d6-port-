@@ -398,10 +398,10 @@ function timetracker_menu_default_menu_links() {
 
 function timetracker_taxonomy_term_delete($term)
 {
-	$voc = variable_get('timetracker_projects', 0);
+	$voc = variable_get('timetracker_projects', NULL);
 	
 	// compare the term vid to the vid of the vocabulary chosen in the timetracker settings
-	if($term->vid == $voc->vid)
+	if($term->vid == $voc)
 	{
 		print $term->tid;
 		$delete_project = db_query("DELETE FROM {timetracker_projects} WHERE project_id=%d", array($term->tid));
@@ -415,7 +415,7 @@ function timetracker_taxonomy_term_delete($term)
 function timetracker_mytime_()
 {
 			// get vocabulary as options list
-			$voc = variable_get('timetracker_projects', 'projects');
+			$voc = variable_get('timetracker_projects', NULL);
 			$tree = taxonomy_get_tree($voc,0,NULL,true);
 			
 			$terms = array(0 => ''); 
@@ -474,7 +474,7 @@ function timetracker_mytime_()
 function timetracker_mytime_update_()
 {
 			// get vocabulary as options list
-			$voc = variable_get('timetracker_projects', 0);
+			$voc = variable_get('timetracker_projects', NULL);
 			$tree = taxonomy_get_tree($voc,0,NULL,true);
 			
 			$terms = array(0 => ''); 
@@ -538,7 +538,7 @@ function timetracker_myreports_()
 	global $user;		
 	
 	// get vocabulary as options list
-	$voc = variable_get('timetracker_projects', 0);
+	$voc = variable_get('timetracker_projects', NULL);
 	$tree = taxonomy_get_tree($voc,0,NULL,true);
 	$terms = array();
 	

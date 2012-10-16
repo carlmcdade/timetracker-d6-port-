@@ -288,7 +288,7 @@ class timetracker_admin{
     	/* we may need to know who by and when a project was created */
     	global $user;
     	
-    	$voc = variable_get('timetracker_projects', 0);			
+    	$voc = variable_get('timetracker_projects', NULL);			
 
     	$term = new stdClass();
 		$term->name = check_plain($_POST['project_name']);
@@ -339,11 +339,6 @@ class timetracker_admin{
 		/* save to the Drupal taxonomy system which creates a term/project */
 		taxonomy_term_save($term);
 
-		$project_id = db_select('timetracker_projects', 'tp')
-						->fields('tp')
-						->condition('project_id', $term->tid, '=')
-						->execute()
-						->fetchObject();
 						
 		$project_id = db_fetch_object(db_query("SELECT * FROM {timetracker_projects} AS tp WHERE project_id=%d", array($term->tid)));						
 		
@@ -364,20 +359,18 @@ class timetracker_admin{
 					
 		}
 		else
-		{		
-			$project_info = db_insert('timetracker_projects') // Table name no longer needs {}
-					->fields(array(
-					  'project_id' => $term->tid,
-					  'project_group_id' => check_plain($_POST['project_group']),
-					  'project_name' => $term->name,
-					  'project_desc' => $term->description,
-					  'project_external_key' => check_plain($_POST['project_external_key']),// since the terms do not have fields we add fk an external table and hold the extra information there
-					  'created' => date("Y-m-d H:i:s"),
-					  'changed' => date("Y-m-d H:i:s"),
-					  'status' => check_plain($_POST['project_status']),
-					  'vid' => $voc->vid
-					))
-					->execute(); 
+		{		 
+					
+			$project_info = db_query("INSERT INTO {timetracker_projects} 
+				VALUES(project_id,project_group_id, project_name,project_desc,project_external_key,created,changed,status, vid 
+				SET(" . $term->name .",". 
+				$term->description . "," . 
+				check_plain($_POST['project_group']) . "," .  
+				check_plain($_POST['project_external_key']) . "," . 
+				date("Y-m-d H:i:s") . "," .
+				date("Y-m-d H:i:s") . "," .
+				check_plain($_POST['project_status']) . "," .
+				$voc );
 					
 			drupal_set_message( t('project and taxonomy tables syncronised.'));
 				

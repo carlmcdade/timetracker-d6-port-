@@ -50,35 +50,35 @@ class timetracker{
     
     function user()
     {        
+    	global $user;
     	
     	/*
     		js files
     		drupal_add_library('system', 'ui.slider');
     		drupal_add_library('system','ui.datepicker');
     		the jquery add-ons needed for the UI.
-    	*/ 
+    	*/
+    	
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/jquery.form.js');
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/jquery.validate.js');
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/additional-methods.js');
         drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/anytime.js');
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/mvc.js');
     	
-    	
-    	
-        if(variable_get('timetracker_projects', '') == '')
+    	/* menu on the timetracker page from hook_links() function */
+		$variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
+			  	
+    	$check_entries = db_fetch_object(db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d LIMIT 1", array($user->uid)));
+			   	
+        if($check_entries->num_rows <= 0)
 		{
-			/* menu on the timetracker page from hook_links() function */
-			$variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
-			$variables['content'] = t('There are no projects at this time. Contact the Administator.');
+			/* limit to five days */ 					
+			$variables['content'] = t('There are no entries at this time.');
 		}
 		else
 		{
 			/* this is linked to the menu system so no title is necessary */
 			$variables['title'] = t( "Things you've done so far");
-			
-			
-			/* menu on the timetracker page from hook_links() function */
-			$variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
 			
 			
 			/* 
@@ -107,8 +107,8 @@ class timetracker{
     	$total_hours = 0;
     	/* create select list of projects */
 		// get vocabulary as options list
-		$voc = taxonomy_vocabulary_machine_name_load(variable_get('timetracker_projects', 'projects'));
-		$tree = taxonomy_get_tree($voc->vid,0,NULL,true);
+		$voc = variable_get('timetracker_projects', 'projects');
+		$tree = taxonomy_get_tree($voc,0,NULL,true);
 			   	
     	
     	if($today)
@@ -351,15 +351,31 @@ class timetracker{
 
     function reports()
     {  	
+    	global $user;
+    	
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/jquery.form.js');
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/anytime.js');
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/mvc.js');   	
     	
-    	/* title */
-        $variables['title'] = 'My time reports';
     	
     	/* links */
         $variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
+        
+        $check_entries = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d', array($user->uid));
+			
+		
+		if($check_projects->num_rows <= 0)
+		{
+		
+			/* monthly totals for this user by project */
+			$variables['content'] = t('No reports are available.');
+
+			return _view('default', $variables);
+		}
+		
+		/* title */
+        $variables['title'] = 'My time reports';
+		
         
         /* form for choosing a project report */
         $output = drupal_get_form('timetracker_myreports_');
@@ -413,7 +429,7 @@ class timetracker{
 				array('data' => 'Operations', '' => '', 'colspan' => 2),			
 				);
 		
-		while ($all = db_fetch_object($record))
+		while ($record = db_fetch_object($result))
 		{
 				  
 				  $row_data[] = array(
@@ -537,11 +553,25 @@ class timetracker{
     
     function projects()
     {
-        /* title */
-        $variables['title'] = 'My projects';  	
+          	
     	
     	/* links */
     	$variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
+    	
+    	/* check for available projects */
+    	$check_projects = db_fetch_object(db_query("SELECT * FROM {timetracker_projects} AS pj"));
+		
+		if($check_projects->num_rows == 0)
+		{
+		
+			/* monthly totals for this user by project */
+			$variables['content'] = t('No projects are available');
+
+			return _view('default', $variables);
+		}
+		
+    	/* title */
+        $variables['title'] = 'My projects';
     	
     	$output = '<div id="project-list">' . t('A list of available projects and their descriptions:') . '</div>';
     	

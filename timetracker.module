@@ -694,6 +694,9 @@ function timetracker_projects_add_()
 		'#title' => t('Project name'),
 		'#default_value' => isset($project['project_name']) ? $project['project_name'] : '',
 	);
+	
+	if(!empty($groups))
+	{
 		
 	$form['add']['project_group'] = array(
 		'#type' => 'select',
@@ -702,6 +705,15 @@ function timetracker_projects_add_()
 		'#title' => t('Project group'),
 		'#description' => t('This will automatically add the prefix for the group. Example: choosing TTC will give "OP-"')
 	);
+	}
+	else
+	{
+		//
+		$form['add']['project_group'] = array(
+			'#type' => 'markup', 
+			'#value' => l(t('Add a project group'),'admin/timetracker/groups'),
+		);
+	}
 	
 	$form['add']['project_external_key'] = array(
 		'#type' => 'textfield', 

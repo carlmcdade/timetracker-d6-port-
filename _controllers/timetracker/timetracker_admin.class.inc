@@ -61,9 +61,10 @@ class timetracker_admin{
     
     function settings()
     {   	
-    	// admin links
-        
-        print variable_get('timetracker_projects', 0);
+    	
+		// admin links
+		$variables['links'] = _menu_links($this->admin_links(),' | ');
+		
         $output = drupal_get_form('timetracker_projects_category_add_');
         $output .= drupal_get_form('timetracker_settings_form_');
     	$variables['content'] = $output;
@@ -75,15 +76,13 @@ class timetracker_admin{
 	{
 		//
 		variable_set('timetracker_projects', $_POST['selected']);
-		drupal_set_message(t('The timetracker category is has been set to "'). variable_get('timetracker_projects', 'projects') . '".');
-		drupal_goto('timetracker/admin/timetracker/settings');
+		drupal_set_message(t('The timetracker category is has been set to "'). variable_get('timetracker_projects', NULL) . '".');
+		drupal_goto('admin/timetracker/settings');
 	}
 	
 	function reports($extend = NULL)
     {
         
-		// title for content
-		$variables['title'] = t('Administer Reports');
 			
 		// admin links
 		$variables['links'] = _menu_links($this->admin_links(),' | ');
@@ -111,6 +110,8 @@ class timetracker_admin{
 		// Result is returned as a iterable object that returns a stdClass object on each iteration
 		if($result->num_rows > 0)
 		{
+			// title for content
+			$variables['title'] = t('Administer Reports');
 			
 			//set up data array
 			$data = '';
@@ -178,13 +179,15 @@ class timetracker_admin{
     	// get vocabulary as options list
     	
 		$voc = variable_get('timetracker_projects', NULL);
+		
 		if(!$voc)
 		{
 			//
-			$variables['content'] = t('No vocabulary has been assigned ' . l('set project category', 'admin/timetracker/settings'));
+			$variables['content'] = t('No vocabulary has been assigned ' . l('set project category', 'admin/timetracker/settings') . t('. Then create some projects under that category.'));
        
 			return _view('default', $variables);
 		}
+		
 		$tree = taxonomy_get_tree($voc,0,NULL,true);
 		
 		$table_header = array(
@@ -214,7 +217,7 @@ class timetracker_admin{
 		$result = pager_query($query, $limit);
 			
 		// Result is returned as a iterable object that returns a stdClass object on each iteration
-		if($result){
+		if($result->num_rows > 0){
 			//set up data array
 			$data = '';
 			$i = 1;
@@ -250,19 +253,26 @@ class timetracker_admin{
 						);
 			
 			}
+			
+				// show projects add form 
+				$output = drupal_get_form('timetracker_projects_add_');
+				
+				$output .= '<div id="project-list">' . t('A list of available projects and their descriptions:') . '</div>';
+				
+				
+				// Format and print out the table.
+				$output .= theme('table',$table_header, $row_data);
+				
+				$output .= theme('pager', NULL, $limit, 0);
 		}
-		
-		// show projects add form 
-        $output = drupal_get_form('timetracker_projects_add_');
-        
-        $output .= '<div id="project-list">' . t('A list of available projects and their descriptions:') . '</div>';
-    	
-		
-		// Format and print out the table.
-		$output .= theme('table',$table_header, $row_data);
-		
-		$output .= theme('pager', NULL, $limit, 0);
-               
+		else
+		{
+			//
+			$output = drupal_get_form('timetracker_projects_add_');
+			$output .= '<div id="project-list">' . t('No projects have been added.') . '</div>';
+				
+		}
+				   
     	$variables['content'] = $output;
        
         return _view('default', $variables);

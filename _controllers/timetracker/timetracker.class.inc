@@ -70,32 +70,29 @@ class timetracker{
 			  	
     	$check_entries = db_fetch_object(db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d LIMIT 1", array($user->uid)));
 			   	
-        if($check_entries->num_rows <= 0)
+        
+			/* limit to five days */ 
+		$output = drupal_get_form('timetracker_mytime_');
+		
+		if($check_entries->num_rows <= 0)
 		{
-			/* limit to five days */ 					
-			$variables['content'] = t('There are no entries at this time.');
+			$output .= t('There are no entries at this time.');
 		}
 		else
 		{
 			/* this is linked to the menu system so no title is necessary */
 			$variables['title'] = t( "Things you've done so far");
-			
-			
-			/* 
-				the entry form is in the module file because Drupal uses a string to find the function
-				and cannot be called from within a class
-			*/
-			
-			$output = drupal_render(drupal_get_form('timetracker_mytime_'));
+
 			
 			/* list the user projects table */
 			$output .=  '<div id="output"></div>';
 			
 			$output .= self::dailyreport();
 									
-			$variables['content'] = $output;
+			
 		}
-    	
+		
+    	$variables['content'] = $output;
     	return _view('default', $variables);	
         
     }

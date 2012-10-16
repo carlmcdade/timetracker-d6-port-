@@ -257,3 +257,10 @@ td[class*='cell-2-'] {width: 287px }
 {
 	background-image: url('../images/timetracker_icon_a.png');	
 }
+
+#add-missing-project,
+#add-missing-category
+{
+	position: relative;
+	top: 20px;
+}

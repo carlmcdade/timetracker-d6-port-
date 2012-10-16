@@ -418,7 +418,7 @@ function timetracker_mytime_()
 			$voc = variable_get('timetracker_projects', NULL);
 			$tree = taxonomy_get_tree($voc,0,NULL,true);
 			
-			$terms = array(0 => ''); 
+			
 			foreach ($tree as $key => $term)
 			{
 				$terms[$term->tid] = $term->name;
@@ -426,6 +426,7 @@ function timetracker_mytime_()
 			
 			if(!empty($terms))
 			{
+				$terms = array(0 => ''); 
 				ksort($terms);
 			}
 			
@@ -435,15 +436,33 @@ function timetracker_mytime_()
 				'#prefix' => '<table id="task-table"><tr><td>',
 			  );
 			  
-			  $form['project_id'] = array(
-				'#type' => 'select',
-				'#title' => t('Projects'),
-				'#options' => $terms,
-				'#default_value' => $terms[0],
-				'#description' => t('Choose a project. (optional)'),
-				'#prefix' => '',
-				'#suffix' => ''
-			  );			
+			  if(!empty($terms))
+			  {
+			  
+				  $form['project_id'] = array(
+					'#type' => 'select',
+					'#title' => t('Projects'),
+					'#options' => $terms,
+					'#default_value' => $terms[0],
+					'#description' => t('Choose a project. (optional)'),
+					'#prefix' => '',
+					'#suffix' => ''
+				  );
+			  }
+			  elseif($voc != NULL)
+			  {
+			  	  $form['project_add_link'] = array(
+					'#type' => 'markup', 
+					'#value' => l(t('Add project'),'', array('attributes' => array('id' => 'add-missing-project'))),
+					);
+			  }
+			  else
+			  {
+			  	  $form['project_add_link'] = array(
+					'#type' => 'markup', 
+					'#value' => l(t('Set category'),'', array('attributes' => array('id' => 'add-missing-category'))),
+					);
+			  }
 			  			  
 			  $form['event_date'] = array(
 				'#type' => 'textfield', 

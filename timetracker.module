@@ -304,17 +304,12 @@ function timetracker_init()
 */
 
 
-function timetracker_permission() {
+function timetracker_perm() {
   return array(
-    'use timetracker' => array(
-      'title' => t('Use timetracker'), 
-      'description' => t('Use the time management and project page.'),
-    ),
-    'administer timetracker' => array(
-      'title' => t('Administer timetracker'), 
-      'description' => t('Administer the projects and reports.'),
-    ),
-  );
+    'use timetracker',
+    'manage timetracker',
+    'administer timetracker'
+    );
 }
 
 function timetracker_menu()

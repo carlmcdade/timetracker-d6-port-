@@ -1,8 +1,4 @@
-(function ($) {		
-
-  Drupal.behaviors.mvc = {
-    attach: function(context, settings) {      
-     $(document).ready(function() {
+Drupal.behaviors.modulename_subidentifier = function(context) {   
      		 
      	// container start
      	
@@ -39,20 +35,18 @@
 					// remove the last rows to keep the list short ( 5 rows ) for most recent
 					var rowCount = $("div#most-recent-events > table:eq(1) > tbody > tr").length;
 
-					for (i = rowCount; i > rowCount - 3; i--)
+					if(rowCount > 5)
 					{
-						$('div#most-recent-events table:eq(1) > tbody > tr:eq(' + i +')').remove();
+						for (i = rowCount; i > rowCount - 3; i--)
+						{
+							$('div#most-recent-events table:eq(1) > tbody > tr:eq(' + i +')').remove();
+						}
 					}
 					
 					// daily table				
 					$('div#table-' + section[0] + ' table > thead').append(section[1]);
 									
-					// show new working table
-					/*$('#output').html(section[1]).css({
-							backgroundColor: '#99FF66',
-							padding: '10px'
-							});*/
-;
+					
                 }
              
             });
@@ -294,8 +288,5 @@
 						
 
 		  // container end
-	  });
-    }
-  };
-
-})(jQuery);
+}
+    

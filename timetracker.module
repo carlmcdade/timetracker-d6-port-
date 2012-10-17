@@ -421,7 +421,7 @@ function timetracker_mytime_()
 			
 			if(!empty($terms))
 			{
-				$terms = array(0 => ''); 
+				$terms[0] = ''; 
 				ksort($terms);
 			}
 			
@@ -442,19 +442,11 @@ function timetracker_mytime_()
 					'#title' => t('Projects'),
 					'#options' => $terms,
 					'#default_value' => $terms[0],
-					'#description' => t('Choose a project. (optional)'),
+					'#description' => l(t('Add project'),'timetracker/timetracker/project_add', array('attributes' => array('id' => 'add-project'))),
 					'#prefix' => '',
 					'#suffix' => ''
 				  );
-			  }
-			  else
-			  {
-			  	  $form['project_add_link'] = array(
-					'#type' => 'markup', 
-					'#value' => l(t('Add project'),'', array('attributes' => array('id' => 'add-missing-project'))),
-					);
-			  }
-			  
+			  }		  
 			  			  
 			  $form['event_date'] = array(
 				'#type' => 'textfield', 
@@ -664,6 +656,9 @@ function timetracker_settings_form_()
 function timetracker_projects_add_()
 {
 	global $user;
+	
+	$args = func_get_args();
+	
 		
 	// if we are on the edit page fill the values
 	$pid = check_plain(arg(3));
@@ -694,7 +689,7 @@ function timetracker_projects_add_()
 	{
 		//
 		$op = t('Add project');
-		$db_op = 'project_save';
+		$db_op = $args[1];
 	}
 		
 	$groups = array();
@@ -761,7 +756,7 @@ function timetracker_projects_add_()
 		'#submit' => array('Submit'),
 	);
 			  
-	$form['#action'] = url('admin/timetracker/'. $db_op);// admin class
+	$form['#action'] = url($db_op);// admin class
 			  			  
 	return $form;
 	

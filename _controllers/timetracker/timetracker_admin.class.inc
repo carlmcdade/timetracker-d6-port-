@@ -255,7 +255,7 @@ class timetracker_admin{
 			}
 			
 				// show projects add form 
-				$output = drupal_get_form('timetracker_projects_add_');
+				$output = drupal_get_form('timetracker_projects_add_', 'admin/timetracker/project_save');
 				
 				$output .= '<div id="project-list">' . t('A list of available projects and their descriptions:') . '</div>';
 				
@@ -298,36 +298,35 @@ class timetracker_admin{
     	/* we may need to know who by and when a project was created */
     	global $user;
     	
-    	$voc = variable_get('timetracker_projects', NULL);			
+    	$voc = variable_get('timetracker_projects', NULL);	
 
-    	$term = new stdClass();
-		$term->name = check_plain($_POST['project_name']);
-		$term->description = check_plain($_POST['project_desc']);
-		$term->vid = $voc;
+    	$term = array();
+		$term['name'] = check_plain($_POST['project_name']);
+		$term['description'] = check_plain($_POST['project_desc']);
+		$term['vid'] = $voc;
 		
 		/* save to the Drupal taxonomy system which creates a term/project */
-		taxonomy_term_save($term);		
+		taxonomy_save_term($term);		
 		
-		print t('project taxonomy created'); 
+		drupal_set_message( t('project taxonomy created') ); 
 		
 		/* get the term and information that was inserted into the database */
-		$new = $term->tid;
+		$new = $term['tid'];
     			
-    	$term_info = taxonomy_term_load($new);
+    	$term_info = taxonomy_get_term($new);
     	
-    	$data = array(
-				  'project_id' => $new,
-				  'project_name' => $term_info->name,
-				  'project_desc' => $term_info->description,
-				  'project_external_key' => check_plain($_POST['project_external_key']),// since the terms do not have fields we add fk an external table and hold the extra information there
-				  'created' => date("Y-m-d H:i:s"),
-				  'changed' => date("Y-m-d H:i:s"),
-				  'vid' => $voc
-				);
-		
-		drupal_write_record('timetracker_projects', $data);
+    	$project_info = db_query("INSERT INTO {timetracker_projects} 
+				VALUES(project_id,project_group_id, project_name,project_desc,project_external_key,created,changed,status, vid 
+				SET(" . $term->name .",". 
+				$term->description . "," . 
+				check_plain($_POST['project_group']) . "," .  
+				check_plain($_POST['project_external_key']) . "," . 
+				date("Y-m-d H:i:s") . "," .
+				date("Y-m-d H:i:s") . "," .
+				check_plain($_POST['project_status']) . "," .
+				$voc );
 				
-		print t('project added to timetracker'); 
+		drupal_set_message( t('project added to timetracker') ); 
     }
     
     function project_update()

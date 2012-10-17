@@ -425,6 +425,9 @@ function timetracker_mytime_()
 				ksort($terms);
 			}
 			
+			if($voc != NULL)
+			{
+			
 			  $form['user_task'] = array(
 				'#type' => 'textfield', 
 				'#title' => t('Task'),
@@ -444,20 +447,14 @@ function timetracker_mytime_()
 					'#suffix' => ''
 				  );
 			  }
-			  elseif($voc != NULL)
+			  else
 			  {
 			  	  $form['project_add_link'] = array(
 					'#type' => 'markup', 
 					'#value' => l(t('Add project'),'', array('attributes' => array('id' => 'add-missing-project'))),
 					);
 			  }
-			  else
-			  {
-			  	  $form['project_add_link'] = array(
-					'#type' => 'markup', 
-					'#value' => l(t('Set category'),'admin/timetracker/settings', array('attributes' => array('id' => 'add-missing-category'))),
-					);
-			  }
+			  
 			  			  
 			  $form['event_date'] = array(
 				'#type' => 'textfield', 
@@ -481,6 +478,14 @@ function timetracker_mytime_()
 			  );		  
 			  			
 			  $form['#action'] = url('timetracker/timetracker/mytime');
+			}
+			else
+			{
+				$form['project_add_link'] = array(
+					'#type' => 'markup', 
+					'#value' => l(t('Set category'),'admin/timetracker/settings', array('attributes' => array('id' => 'add-missing-category'))),
+				);
+			}
 			  
 		return $form;
 }

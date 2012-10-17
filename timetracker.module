@@ -455,7 +455,7 @@ function timetracker_mytime_()
 			  {
 			  	  $form['project_add_link'] = array(
 					'#type' => 'markup', 
-					'#value' => l(t('Set category'),'', array('attributes' => array('id' => 'add-missing-category'))),
+					'#value' => l(t('Set category'),'admin/timetracker/settings', array('attributes' => array('id' => 'add-missing-category'))),
 					);
 			  }
 			  			  

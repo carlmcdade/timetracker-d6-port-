@@ -811,7 +811,7 @@ class timetracker{
 				VALUES(" . 
 				"'" . $user->uid . "'," .
 				"'" . $project_info->tid ."',". 
-				"'" . $project_info_->name . "'," . 
+				"'" . $project_info->name . "'," . 
 				"'" . $user_task . "'," .  
 				"'" . $event_date . "'," . 
 				"'" . $project_hours . "'," . 

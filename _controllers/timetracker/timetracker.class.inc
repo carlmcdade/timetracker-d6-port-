@@ -146,7 +146,7 @@ class timetracker{
 							'</tr>'. "\n" .
 							'<tr id="recent-form-row-'.$record->id .'" style="display:none" class=" temp-form">' . 
 							'<td colspan="7"><div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
-								'<form method="post" id="re-update-entry-'.$record->id.'" action="http://drupal.se/timetracker/timetracker/update_mytime">'.
+								'<form method="post" id="re-update-entry-'.$record->id.'" action="../timetracker/timetracker/update_mytime">'.
 								'<table><tr>' .
 								'<td><label>'.t('Task').'<input type="textfield" id="re-task-'.$record->id.'" name="task" value="'.$record->project_user_task.'" size="24"></label></td>' .
 								'<td><label>' . t('Projects') . '' . '</label></td>' .
@@ -210,13 +210,13 @@ class timetracker{
 					array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $re_record->id . '/' . $re_record->event_date, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $re_record->id))), 'class' => 'cell-6-'.$re_record->id),
 					array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$re_record->id, array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $re_record->id))), 'class' => 'cell-7-'.$re_record->id) 
 				),
-				'id' => array('id' => 'recent-'.$re_record->id),
+				'id' => 'recent-'.$re_record->id,
 						  );
 			$event_data[] = array(
 							'data' => array(
 								
 								array('data' => '<div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
-									'<form method="post" id="re-update-entry-'.$re_record->id.'" action="http://drupal.se/timetracker/timetracker/update_mytime">'.
+									'<form method="post" id="re-update-entry-'.$re_record->id.'" action="../timetracker/timetracker/update_mytime">'.
 									'<table><tr>' .
 									'<td><label>'.t('Task').'<input type="textfield" id="re-task-'.$re_record->id.'" name="task" value="'.$re_record->project_user_task.'" size="12"></label></td>' .
 									'<td><label>' . t('Projects') . '' . $terms . '</label></td>' .
@@ -235,7 +235,7 @@ class timetracker{
 				  
 		}	
 		
-		$output[] = '<div id="most-recent-events"><h2>' . t('Most recent entries') . '</h2>' . theme('table', array($recent_header,$event_data)) . '</div>';
+		$output[] = '<div id="most-recent-events"><h2>' . t('Most recent entries') . '</h2>' . theme('table', $recent_header,$event_data) . '</div>';
 		
 		
 		$table_header = array(
@@ -922,10 +922,10 @@ class timetracker{
 		{
 		 
 		  /* limit to five days */
-    	$result = db_query("SELECT *
-			FROM {timetracker_project_events} e WHERE e.id = :id LIMIT 1", array(':id' => $id));
+    	$all = db_fetch_object(db_query("SELECT *
+			FROM {timetracker_project_events} e WHERE e.id = :id LIMIT 1", array(':id' => $id)));
 			
-		$all = $result->fetchObject();
+		
 			
 		
 			$daily = '<tr class="event-added row-' . $all->id . '">' .
@@ -955,13 +955,11 @@ class timetracker{
 			$row_id = $all->id;
 			
 		/* update the hours total for the day */
-		$result_hours = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = :uid AND e.event_date = :eid', array(':uid' => $user->uid,':eid' => $all->event_date));
+		$all_hours = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = :uid AND e.event_date = :eid', array(':uid' => $user->uid,':eid' => $all->event_date));
 				
-		/* Result is returned as a iterable object that returns a stdClass object on each iteration */
-		$all_hours = $result_hours->fetchAll();
 		
 		
-		foreach ($all_hours as $record)
+		while ($record = db_fetch_object($all_hours))
 		{
 			$total_hours += $record->project_hours;
 		}	

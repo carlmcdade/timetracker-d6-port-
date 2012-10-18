@@ -123,7 +123,9 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 	 			/// reset the sect list to the selected value if not changed by submit
 	 			$("#update-entry-" + row[1]).each (function() { this.reset(); });
 	 			
-	 			$("#form-row-" + row[1]).addClass('temp-form').show('slow');
+	 			$("#form-row-" + row[1]).addClass('temp-form').fadeIn("slow", function () {
+							$(this).css('display', '');
+					});
 	 			
 	 			$("form#update-entry-" + row[1] + " table tbody tr td.indicator div.working-indicator").ajaxStart(function(){
      				
@@ -154,7 +156,9 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 	 			// reset the select list to the selected value if not changed by submit
 	 			$("#re-update-entry-" + row[1]).each (function() { this.reset(); });
 	 			
-	 			$("#recent-form-row-" + row[1]).addClass('temp-form').show('slow');
+	 			$("#recent-form-row-" + row[1]).addClass('temp-form').fadeIn("slow", function () {
+							$(this).css('display','');
+					});
 	 			
 	 			$("form#update-entry-" + row[1] + " table tbody tr td.indicator div.working-indicator").ajaxStart(function(){
      				
@@ -171,7 +175,10 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 			////////////////////////////////////////////////////////////////////
 			
 			$("div.form-close").live("click", function(event) {
-					$("tr:visible[class*='temp-form']").hide('slow');
+					$("tr:visible[class*='temp-form']").fadeOut("slow", function () {
+							$(this).css({display:"none"});
+					});
+
 			});
 			
 			////////////////////////////////////////////////////////////////////
@@ -185,7 +192,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 				$.ajax({
 							type: "POST",
 							dataType: "html",
-							url: "http://drupal.se/timetracker/timetracker/update_mytime/",
+							url: "../timetracker/update_mytime/",
 							data:{
 								id:$('input#re-form-id-' + row[3]).val(),
 								task:$('input#re-task-' + row[3]).val(),
@@ -235,7 +242,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 				$.ajax({
 							type: "POST",
 							dataType: "html",
-							url: "http://drupal.se/timetracker/timetracker/update_mytime/",
+							url: "../timetracker/update_mytime/",
 							data:{
 								id:$('input#form-id-' + row[2]).val(),
 								task:$('input#edit-task-' + row[2]).val(),
@@ -280,7 +287,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 			
 			$('#edit-export').live("click", function(){
 				
-					$('#timetracker-myreports-csv-').attr("action", 'http://drupal.se/timetracker/timetracker/myreport_csv/');
+					$('#timetracker-myreports-csv-').attr("action", '../timetracker/myreport_csv/');
 				
 					$('#timetracker-myreports-csv-').submit();
 				

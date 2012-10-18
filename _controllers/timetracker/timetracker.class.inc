@@ -948,11 +948,13 @@ class timetracker{
 			$row_id = $all->id;
 			
 		/* update the hours total for the day */
-		$all_hours = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = %s', array($user->uid,$all->event_date));
+		
+		
+		$all_hours = db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = '%s'", array($user->uid,$all->event_date));
 				
 		
 		
-		while ($record = db_fetch_object($all_hours))
+		while($record = db_fetch_object($all_hours))
 		{
 			$total_hours += $record->project_hours;
 		}	
@@ -964,7 +966,7 @@ class timetracker{
     	}
     	else
     	{
-    		print t('error row not updated') . print_r($sql,1);
+    		print t('error row not updated');
     	}
     }
     

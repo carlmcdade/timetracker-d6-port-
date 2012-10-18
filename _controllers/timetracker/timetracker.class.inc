@@ -804,7 +804,7 @@ class timetracker{
     	global $user;
     	
     	/* check for first entry */
-    	$first_entry = db_fetch_object(db_query("SELECT user_id FROM {timetracker_project_events} WHERE user_id = %d",array($user->uid)));
+    	$first_entry = db_query("SELECT COUNT(user_id) FROM {timetracker_project_events} WHERE user_id = %d",array($user->uid));
     	
     	$event = db_query("INSERT INTO {timetracker_project_events} 
 				(user_id,project_id,project_name,project_user_task,event_date,project_hours,created,changed) 
@@ -818,27 +818,14 @@ class timetracker{
 				"'" . date("Y-m-d H:i:s") . "'," .
 				"'" . date("Y-m-d H:i:s") . "')");
     	   	
-    	/*$event = db_insert('timetracker_project_events') 
-				->fields(array(
-				  'user_id' => $user->uid,
-				  'project_id' => $project_info->tid,
-				  'project_name' => $project_info->name,
-				  'project_user_task' => $user_task,
-				  'event_date' => $event_date,
-				  'project_hours' => $project_hours,
-				  'created' => date("Y-m-d H:i:s"),
-				  'changed' => date("Y-m-d H:i:s")
-				))
-				->execute();
-				*/
 				
 		/* inform the user */
 		//drupal_set_message(t( 'Confirming ') . $project_hours . t(' task hours added to ') . $project_info->name . t(' for ') . $event_date );
 		
 		/* show the updated report */
 		
-		print $first_entry->user_id;
-		if($first_entry->user_id > 0)
+		//print $first_entry->user_id;
+		if($first_entry->num_rows <= 0 )
 		{
 			$mode = FALSE;
 		}
@@ -847,7 +834,7 @@ class timetracker{
 			$mode = TRUE;
 		}
 		
-		print $event_date.'}{'. self::dailyreport($mode, $event_date);
+		print $event_date.'}{'. self::dailyreport($mode, $event_date);// .'}{' .print_r($project_info,1);
     	  	
     }
     

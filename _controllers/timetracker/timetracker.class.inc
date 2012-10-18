@@ -34,12 +34,12 @@ class timetracker{
         		);
         
         $var[$section .'_2'] = array(
-        		'text' => 'Reports', 
+        		'text' => 'My Reports', 
         		'path' => 'timetracker/timetracker/reports'
         		);
         
         $var[$section .'_3'] = array(
-        		'text' => 'Projects', 
+        		'text' => 'My Projects', 
         		'path' => 'timetracker/timetracker/projects'
         		);
 
@@ -362,7 +362,7 @@ class timetracker{
         $check_entries = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d', array($user->uid));
 			
 		
-		if($check_projects->num_rows <= 0)
+		if($check_entries->num_rows <= 0)
 		{
 		
 			/* monthly totals for this user by project */

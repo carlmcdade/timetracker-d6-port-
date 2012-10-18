@@ -249,6 +249,11 @@ div.block:hover .edit {
 	display:none;
 }
 
+.event-removed
+{
+	background-color:#FFCCCC;
+}
+
 td[class*='cell-1-'] {width: 57px }
 
 td[class*='cell-2-'] {width: 287px }

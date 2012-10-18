@@ -105,6 +105,9 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 							$("#recent-form-row-" + row[1]).remove();
 														
 							$('#total-row-' + section[0] + ' #total-user-hours').text(section[1]);
+							
+							$('#total-row-' + section[0]).removeClass().addClass('event-removed');							
+
 						
 							
 						}

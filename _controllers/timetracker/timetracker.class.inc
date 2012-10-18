@@ -860,22 +860,17 @@ class timetracker{
     	/* remove record from user database */
     	$id = check_plain(arg(3));
     	
-    	$deleted = db_delete('timetracker_project_events')
-		  ->condition('id', $id)
-		  ->execute();
+    	$deleted = db_query("DELETE FROM {timetracker_project_events} WHERE id=%d", array($id));
 		  
 		$total_hours = 0;
     	
     	/* clean input */
     	$date = check_plain(arg(4));
     	
-    	$result = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = :uid AND e.event_date = :eid', array(':uid' => $user->uid,':eid' => $date));
+    	$all = db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = '%s'", array($user->uid,$date));
 				
-		/* Result is returned as a iterable object that returns a stdClass object on each iteration */
-		$all = $result->fetchAll();
 		
-		
-		foreach ($all as $record)
+		while($record = db_fetch_object($all))
 		{
 			$total_hours += $record->project_hours;
 		}
@@ -905,25 +900,23 @@ class timetracker{
     	/*  get the term name */
     	$project = check_plain($_POST['project']);
 		$project_info = taxonomy_get_term($project);
-    	
-    	$event_update = db_update('timetracker_project_events') // Table name no longer needs {}
-		  ->fields(array(
-		    'project_user_task' => $task,
-		    'project_name' => $project_info->name,
-		    'project_id' => $project_info->tid,
-			'project_hours' => $hours,
-			'changed' => date("Y-m-d H:i:s")
-		  ))
-		  ->condition('id', $id, '=')
-		  ->condition('user_id', $user->uid, '=')
-		  ->execute();
+		
+		//$sql = "UPDATE {timetracker_project_events} SET (project_user_task = '" . $task . "'," . "project_name = '" . $project_info_name  . "'," . "project_id = " . $project_info->tid . "," . "project_hours = $hours" . ","  . "changed = ". date("Y-m-d H:i:s") . " WHERE id = $id AND user_id = $user->uid";
+		//print $sql;
+				
+		$event_update = db_query("UPDATE {timetracker_project_events} SET 
+				project_user_task ='%s'," . 
+				"project_name = '%s'," . 
+				"project_id = %d," . 
+				"project_hours = %d" . ","  .
+				"changed = '%d'" . 
+				" WHERE id = %d AND user_id = %d", array($task,$project_info->name,$project_info->tid,$hours,date("Y-m-d H:i:s"),$id,$user->uid));
 		  
-		if($event_update > 0)
+		if($event_update == TRUE)
 		{
 		 
 		  /* limit to five days */
-    	$all = db_fetch_object(db_query("SELECT *
-			FROM {timetracker_project_events} e WHERE e.id = :id LIMIT 1", array(':id' => $id)));
+    	$all = db_fetch_object(db_query("SELECT * FROM {timetracker_project_events} e WHERE e.id = %d LIMIT 1", array($id)));
 			
 		
 			
@@ -955,7 +948,7 @@ class timetracker{
 			$row_id = $all->id;
 			
 		/* update the hours total for the day */
-		$all_hours = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = :uid AND e.event_date = :eid', array(':uid' => $user->uid,':eid' => $all->event_date));
+		$all_hours = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = %s', array($user->uid,$all->event_date));
 				
 		
 		
@@ -971,7 +964,7 @@ class timetracker{
     	}
     	else
     	{
-    		print t('error row not updated');
+    		print t('error row not updated') . print_r($sql,1);
     	}
     }
     

@@ -834,7 +834,16 @@ class timetracker{
 			$mode = TRUE;
 		}
 		
-		print $event_date.'}{'. self::dailyreport($mode, $event_date);// .'}{' .print_r($project_info,1);
+		
+    	$all = db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = '%s'", array($user->uid,$event_date));
+				
+		
+		while($record = db_fetch_object($all))
+		{
+			$total_hours += $record->project_hours;
+		}
+		
+		print $event_date.'}{'. self::dailyreport($mode, $event_date) .'}{' . $total_hours ;
     	  	
     }
     

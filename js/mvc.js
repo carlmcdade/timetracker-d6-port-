@@ -45,6 +45,12 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 					
 					// daily table				
 					$('div#table-' + section[0] + ' table > thead').append(section[1]);
+					
+					$('#total-row-' +  section[0] + ' #total-user-hours').text(section[2]);
+					
+					$('#total-row-' + section[0]).removeClass().addClass('event-added');							
+
+								
 									
 					
                 }

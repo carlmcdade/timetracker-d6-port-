@@ -62,7 +62,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
             $('#timetracker-myreports-').ajaxForm({
             target:'#output',
             success: function(){
-            	            $('#export-form').show();
+            	            
 							$("#my-report-id").val($('#edit-my-projects-id option:selected').val());
 						}
             });

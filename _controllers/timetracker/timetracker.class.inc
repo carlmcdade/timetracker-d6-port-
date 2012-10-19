@@ -407,8 +407,18 @@ class timetracker{
 			/*  get the term name */
 			$project_info = taxonomy_get_term($project);
 			
-			$result = db_query("SELECT *
+			if($start && !empty($start))
+			{
+				$result = db_query("SELECT *
 				FROM {timetracker_project_events} e WHERE e.event_date BETWEEN '%s' AND '%s' AND e.user_id = %d AND e.project_id = %d ORDER BY created DESC", array($start, $end, $user->uid, $project));
+			}
+			else
+			{
+				//
+				$result = db_query("SELECT *
+				FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC", array($user->uid, $project));
+			
+			}
 				
     	}
     	else
@@ -458,7 +468,7 @@ class timetracker{
 						  	  array('data' => $record['project_user_task'], 'class' => 'cell-2-'.$record['id']), 
 						  	  array('data' => $record['event_date'], 'class' => 'cell-3-'.$record['id']),
 						  	  array('data' => $record['project_hours'], 'class' => 'cell-4-'.$record['id']),
-						  	  array('data' => '<input type="hidden" name="my_projects_id" id="my-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-5-'.$record['id']),
+						  	  array('data' => '<input type="hidden" name="list-projects_id" id="list-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-5-'.$record['id']),
 						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record['id'] . '/' . $record['event_date'], array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record['id']))), 'class' => 'cell-6-'.$record['id']),
 						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record['id'], array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record['id']))), 'class' => 'cell-7-'.$record['id']) 
 				  

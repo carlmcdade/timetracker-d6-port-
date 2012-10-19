@@ -40,7 +40,7 @@ class timetracker{
         
         $var[$section .'_3'] = array(
         		'text' => 'My Projects', 
-        		'path' => 'timetracker/timetracker/projects'
+        		'path' => 'timetracker/timetracker/myprojects'
         		);
 
         return $var;
@@ -719,13 +719,14 @@ class timetracker{
 			$term_info = taxonomy_get_term($new);
 			
 			$project_info = db_query("INSERT INTO {timetracker_projects} 
-				(project_id,project_name,project_desc,project_group_id,project_external_key,created,changed,status, vid) 
+				(project_id,project_name,project_desc,project_group_id,project_external_key,created_by,created,changed,status, vid) 
 				VALUES(" . 
 				"'" . $new . "'," .
 				"'" . $term_info->name ."',". 
 				"'" . $term_info->description . "'," . 
 				"'" . $group . "'," .  
 				"'" . $ext_key . "'," . 
+				"'" . $user->uid . "'," .
 				"'" . date("Y-m-d H:i:s") . "'," .
 				"'" . date("Y-m-d H:i:s") . "'," .
 				"'" . $status . "'," .
@@ -852,6 +853,82 @@ class timetracker{
     }
     
     /* the response to creating a time entry for a project */
+    
+    function myprojects()
+    {
+        global $user;  	
+    	
+    	/* links */
+    	$variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
+    	
+    	/* check for available projects */
+    	$projects = db_query("SELECT * FROM {timetracker_projects} AS pj WHERE created_by = %d", array($user->uid));
+		
+		/* show a list of the taxonomy terms used in the the vocbulary */
+    	$output = drupal_get_form('timetracker_projects_add_', 'timetracker/timetracker/project_save');
+    	
+    	
+    	if($projects->num_rows <= 0)
+		{
+		
+			/* monthly totals for this user by project */
+			$variables['content'] = $output . ('No projects are available');
+
+			return _view('default', $variables);
+		}
+		
+    	/* title */
+        $variables['title'] = 'My projects';
+    	
+    	$output .= '<div id="project-list">' . t('A list of your projects and their descriptions:') . '</div>';
+    	
+    	/* get vocabulary as options list */
+		$voc = variable_get('timetracker_projects', 0);
+		$tree = taxonomy_get_tree($voc,0,NULL,true);
+		
+		$table_header = array(
+				array('data' => 'ID'),
+				array('data' => 'Name'),
+				array('data' => 'Hours'),
+				array('data' => 'Operations','colspan' => 2),			
+				);
+				
+		while ($record = db_fetch_array($projects))
+		{
+			$row_data[] = array(
+						  'data' => array(
+						  	  array('data' => $record['id'], 'class' => 'cell-1-'.$record['id']), 
+						  	  array('data' => $record['project_name'], 'class' => 'cell-2-'.$record['id']), 
+						  	  array('data' => $record['project_hours'], 'class' => 'cell-5-'.$record['id']),
+						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record['id'] . '/' . $record['event_date'], array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record['id']))), 'class' => 'cell-6-'.$record['id']),
+						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record['id'], array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record['id']))), 'class' => 'cell-7-'.$record['id']) 
+				  
+						  	  ),
+						  'class' => 'row-'.$record['id'],
+						  );											
+			$total_hours += $record['project_hours'];
+				  
+		}
+		
+		$row_data[] = array(
+							'data' => array(
+								l(t('export'),'timetracker/timetracker/myreport_csv/'),
+								'Total Hours:', 
+								array('data' => $total_hours , 'colspan' => 2, 'id' => 'total-user-hours')),
+							'id' => 'total-row-'.$date,
+						);	
+		
+		
+		/* Format and print out the table. */
+		
+		
+		$output .= '<div>'. theme('table', $table_header,$row_data) . '</div>';
+    	
+		
+        $variables['content'] = $output;
+        
+        return _view('default', $variables);
+    }
     
     function mytime()
     {

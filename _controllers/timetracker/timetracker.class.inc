@@ -399,7 +399,7 @@ class timetracker{
     	$start = $_POST['start_date'];
     	$end = $_POST['end_date'];
     	
-    	/* clean input */
+    	/* check for post request */
     	if(isset($_POST['my_projects_id']) && $_POST['my_projects_id'] != '')
     	{
     		$project = check_plain($_POST['my_projects_id']);   		
@@ -433,7 +433,12 @@ class timetracker{
 		while ($record = db_fetch_array($result))
 		{
 				  
-				  $selected = '';  
+				/* create select list of projects */
+				// get vocabulary as options list
+				$voc = variable_get('timetracker_projects', 'projects');
+				$tree = taxonomy_get_tree($voc,0,NULL,true);
+			
+				$selected = '';  
 				$terms = '<select id="projects-'.$record['id'].'" name="projects">'; 
 				$terms .= '<option value="0"></option>';
 					foreach ($tree as $key => $term)
@@ -485,10 +490,10 @@ class timetracker{
 		
 		$row_data[] = array(
 							'data' => array(
-								l(t('export'),'timetracker/timetracker/myreport_csv/' . $date),
+								l(t('export'),'timetracker/timetracker/myreport_csv/' . $start .'/' . $end . '/' . $project),
 								'',
 								'Total Hours:', 
-								array('data' => $total_hours , 'colspan' => 3, 'id' => 'total-user-hours')),
+								array('data' => $total_hours , 'colspan' => 4, 'id' => 'total-user-hours')),
 							'id' => 'total-row-'.$date,
 						);
 		
@@ -528,6 +533,26 @@ class timetracker{
 			/* cleanup file name from commonly used special characters */
 			$not_used = array(" ", "_", "&","[","]");
 			$filename = str_replace($not_used, "-", $filename);
+    	}
+    	elseif(is_numeric(arg(5)))
+    	{
+    		//Check for get request
+    		$start = arg(3);
+    		$end = arg(4);
+    		$project = arg(5);   		
+    					
+			$row_sql = "SELECT *
+				FROM {timetracker_project_events} e WHERE e.event_date BETWEEN '%s' AND '%s' AND e.user_id = %d AND e.project_id = %d ORDER BY created DESC";
+				
+			$row_conditions = array($start, $end, $user->uid, $project);
+			
+			/* build the file name */
+			$filename = strtolower($user->name . '-entry-dates-' . $start . '--' . $end .'.txt');
+			
+			/* cleanup file name from commonly used special characters */
+			$not_used = array(" ", "_", "&","[","]");
+			$filename = str_replace($not_used, "-", $filename);
+				
     	}
     	else
     	{

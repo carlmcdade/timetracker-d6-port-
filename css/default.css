@@ -258,6 +258,17 @@ td[class*='cell-1-'] {width: 57px }
 
 td[class*='cell-2-'] {width: 287px }
 
+form[id*='re-update-entry-'] table tbody tr td label input,
+form[id*='re-update-entry-'] table tbody tr td label select,
+form[id*='update-entry-'] table tbody tr td label input,
+form[id*='update-entry-'] table tbody tr td label select
+
+{
+	
+	margin: 0px 0px 0px 10px;
+
+}
+
 #features-menu li a.icon-timetracker-timetracker-user span.icon
 {
 	background-image: url('../images/timetracker_icon_a.png');	
@@ -267,4 +278,19 @@ td[class*='cell-2-'] {width: 287px }
 {
 	position: relative;
 	top: 20px;
+}
+
+td.indicator
+{
+	width:20px;
+}
+
+div.working-indicator
+{
+	background-image: url('../images/indicator.gif');
+	background-position: top left;
+	background-repeat: no-repeat;	
+	height: 16px;
+	width: 16px;
+	display: none;
 }

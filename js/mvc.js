@@ -169,7 +169,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 							$(this).css('display','');
 					});
 	 			
-	 			$("form#update-entry-" + row[1] + " table tbody tr td.indicator div.working-indicator").ajaxStart(function(){
+	 			$("form#re-update-entry-" + row[1] + " table tbody tr td.indicator div.working-indicator").ajaxStart(function(){
      				
 				  $(this).show();
 				  

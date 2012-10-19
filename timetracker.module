@@ -573,25 +573,46 @@ function timetracker_myreports_()
 	  
     /* form with table display */
     
-			  $form['my_projects_id'] = array(
+			  
+    $form['start_date'] = array(
+				'#type' => 'textfield', 
+				'#title' => t('Start Date'),
+				'#size' => '10',
+				'#prefix' => '<table><tr><td>',
+				'#suffix' => '</td>'
+			  );
+	
+	$form['end_date'] = array(
+				'#type' => 'textfield', 
+				'#title' => t('End Date'),
+				'#size' => '10',
+				'#prefix' => '<td>',
+				'#suffix' => '</td>'
+			  );
+    
+    $form['my_projects_id'] = array(
 				'#type' => 'select',
 				'#title' => t('Projects'),
 				'#options' => $terms,
 				'#default_value' => $project,
 				'#description' => t('Choose another project to show your accumulated time.'),
+				'#prefix' => '<td>',
+				'#suffix' => '</td>'
 			  );
 			  
-			  $form['submit'] = array(
+	$form['submit'] = array(
 			  	 '#type' => 'submit', 
 			  	 '#value' => t('Show report'),
 			  	 '#submit' => array('Submit'),
+			  	 '#prefix' => '<td>',
+				 '#suffix' => '</td></tr></table>'
 			  );
 			  
-			  $form['#action'] = url('timetracker/timetracker/myreport');
+	$form['#action'] = url('timetracker/timetracker/myreport');
 			  
-			  $markup = '<div id="output"></div>'; 
+	$markup = '<div id="output"></div>'; 
 				  
-			  $form['table'] = array(
+	$form['table'] = array(
 				'#type' => 'markup', 
 				'#value' => $markup,
 			  );

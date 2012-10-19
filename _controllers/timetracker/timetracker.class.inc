@@ -396,6 +396,9 @@ class timetracker{
     	
     	$total_hours = 0;
     	
+    	$start = $_POST['start_date'];
+    	$end = $_POST['end_date'];
+    	
     	/* clean input */
     	if(isset($_POST['my_projects_id']) && $_POST['my_projects_id'] != '')
     	{
@@ -404,8 +407,8 @@ class timetracker{
 			/*  get the term name */
 			$project_info = taxonomy_get_term($project);
 			
-			$result = db_query('SELECT *
-				FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC', array($user->uid, $project));
+			$result = db_query("SELECT *
+				FROM {timetracker_project_events} e WHERE e.event_date BETWEEN '%s' AND '%s' AND e.user_id = %d AND e.project_id = %d ORDER BY created DESC", array($start, $end, $user->uid, $project));
 				
     	}
     	else
@@ -424,51 +427,69 @@ class timetracker{
 				array('data' => 'Task', '' => 'project_user_task'),
 				array('data' => 'Date', '' => 'event_date'),
 				array('data' => 'Hours', '' => 'project_hours'),
-				array('data' => 'Operations', '' => '', 'colspan' => 2),			
+				array('data' => 'Operations', '' => '', 'colspan' => 3),			
 				);
 		
-		while ($record = db_fetch_object($result))
+		while ($record = db_fetch_array($result))
 		{
 				  
-				  $row_data[] = array(
+				  $selected = '';  
+				$terms = '<select id="projects-'.$record['id'].'" name="projects">'; 
+				$terms .= '<option value="0"></option>';
+					foreach ($tree as $key => $term)
+					{
+						if($term->tid === $record->project_id)
+						{
+							$selected = 'selected="selected"';
+						}
+						$terms .= '<option value="'.$term->tid.'" '.$selected.'>' . $term->name . '</option>';
+						$selected = '';
+					}
+				$terms .= '</select>';  
+			
+				$row_data[] = array(
 						  'data' => array(
-						  	  array('data' => $record->id, 'class' => 'cell-1-'.$record->id), 
-						  	  array('data' => $record->project_user_task, 'class' => 'cell-2-'.$record->id), 
-						  	  array('data' => $record->event_date, 'class' => 'cell-3-'.$record->id),
-						  	  array('data' => $record->project_hours, 'class' => 'cell-4-'.$record->id),
-						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_time/' . $record->id . '/' . $project, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record->id))), 'class' => 'cell-5-'.$record->id),
-						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_time/'.$record->id, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->id))), 'class' => 'cell-6-'.$record->id) 
+						  	  array('data' => $record['id'], 'class' => 'cell-1-'.$record['id']), 
+						  	  array('data' => $record['project_user_task'], 'class' => 'cell-2-'.$record['id']), 
+						  	  array('data' => $record['event_date'], 'class' => 'cell-3-'.$record['id']),
+						  	  array('data' => $record['project_hours'], 'class' => 'cell-4-'.$record['id']),
+						  	  array('data' => '<input type="hidden" name="my_projects_id" id="my-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-5-'.$record['id']),
+						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record['id'] . '/' . $record['event_date'], array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record['id']))), 'class' => 'cell-6-'.$record['id']),
+						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record['id'], array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record['id']))), 'class' => 'cell-7-'.$record['id']) 
 				  
 						  	  ),
-						  'id' => array('id' => 'row-'.$record->id),
+						  'class' => 'row-'.$record['id'],
 						  );
-				  $total_hours += $record->project_hours;
+				  $row_data[] = array(
+							'data' => array(
+								
+								array('data' => '<div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
+									'<form method="post" id="update-entry-'.$record['id'].'" action="http://drupal.se/timetracker/timetracker/update_time">'.
+									'<table><tr>' .
+									'<td><label>'.t('Task').'<input type="textfield" id="edit-task-'.$record['id'].'" name="task" value="'.$record['project_user_task'].'" size="24"></label></td>' .
+									'<td><label>' . t('Projects') . '' . $terms . '</label></td>' .
+									'<td>' .
+									'<input type="hidden" name="form-id" id="form-id-'.$record['id'].'" value="'.$record['id'].'"></td>' .
+									'<td><label>'.t('Hours').'<input type="textfield" id="edit-hours-'.$record['id'].'" name="hours" size="2" value="'.$record['project_hours'].'"></label>' .
+									'<td><input type="button" id="sendUpdate" value="update"></td>' .
+									'<td class="indicator"><div class="working-indicator"></div></td>' .
+									'</tr></table>'.
+									'</form>', 
+									'colspan' => 7)),
+								'id' => 'form-row-'.$record['id'],
+								'style' => 'display:none',
+						);
+				  
+				  $total_hours += $record['project_hours'];
 		}
 		
 		$row_data[] = array(
 							'data' => array(
-								'',
+								l(t('export'),'timetracker/timetracker/myreport_csv/' . $date),
 								'',
 								'Total Hours:', 
 								array('data' => $total_hours , 'colspan' => 3, 'id' => 'total-user-hours')),
-						);
-		
-		$row_data[] = array(
-							'data' => array(
-								
-								array('data' => '<div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
-									'<form method="post" style="display:none" id="update-mini-form" action="' . 'http://drupal.se/timetracker/timetracker/update_time">'.
-									'<table><tr>' .
-									'<td><label>'.t('Task').'<input type="textfield" id="edit-task" name="title" value="" size="12"></label></td>' .
-									'<td><label>'.t('Date').'<input type="textfield" id="edit-event-date" name="event_date" value="" size=""></label>' .
-									'<input type="hidden" name="id_mini_form" id="id-mini-form" value=""></td>' .
-									'<td><label>'.t('Hours').'<input type="textfield" id="edit-hours" name="hours" size="2" value=""></label>' .
-									'<td><input type="button" id="sendUpdate" value="update"></td>' .
-									'</tr></table>'.
-									'</form>', 
-									'colspan' => 6)),
-								'id' => array('id' => 'mini-form-row'),
-								'style' => array('style' => 'display:none'),
+							'id' => 'total-row-'.$date,
 						);
 		
 		

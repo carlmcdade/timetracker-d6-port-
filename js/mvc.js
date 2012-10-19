@@ -70,7 +70,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 			$('#update-mini-form').ajaxForm({
 			target: this});
 						
-			$( "#edit-event-date" ).AnyTime_picker(
+			$( "#edit-event-date, #edit-start-date, #edit-end-date" ).AnyTime_picker(
 				  { format: "%Y-%m-%d",
 					formatUtcOffset: "%: (%@)",
 					placement: "popup" });

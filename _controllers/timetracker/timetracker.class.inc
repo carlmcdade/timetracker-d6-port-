@@ -321,7 +321,7 @@ class timetracker{
 		
 		$row_data[] = array(
 							'data' => array(
-								'',
+								l(t('export'),'timetracker/timetracker/myreport_csv/' . $date),
 								'',
 								'',
 								'Total Hours:', 
@@ -436,8 +436,8 @@ class timetracker{
 						  	  array('data' => $record->project_user_task, 'class' => 'cell-2-'.$record->id), 
 						  	  array('data' => $record->event_date, 'class' => 'cell-3-'.$record->id),
 						  	  array('data' => $record->project_hours, 'class' => 'cell-4-'.$record->id),
-						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_time/' . $record->id . '/' . $project, array('attributes' => array('class' => array('delete-time'), 'id' => 'del-' . $record->id))), 'class' => 'cell-5-'.$record->id),
-						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_time/'.$record->id, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $record->id))), 'class' => 'cell-6-'.$record->id) 
+						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_time/' . $record->id . '/' . $project, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record->id))), 'class' => 'cell-5-'.$record->id),
+						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_time/'.$record->id, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->id))), 'class' => 'cell-6-'.$record->id) 
 				  
 						  	  ),
 						  'id' => array('id' => 'row-'.$record->id),
@@ -484,45 +484,63 @@ class timetracker{
     
     function myreport_csv($result,  $filename = NULL)
     { 
-    	global $user;
-    	
-    	
-    	/*
-    		Drupal 6
-    		drupal_set_header('Content-Type: text/csv');
-    		drupal_set_header('Content-Disposition: attachment; filename=' . $filename);
-    	*/
-    	
     	
     	global $user;
     	 	
     	$total_hours = 0;
     	
     	/* clean input */
-    	$project = check_plain($_POST['my_report_id']);
+    	if(isset($_POST['my_report_id']) && $_POST['my_report_id'] != '')
+    	{
+    		$project = check_plain($_POST['my_report_id']);
+    		/*  get the term name */
+    		$project_info = taxonomy_term_load($project);
+    		
+    		$row_sql = "SELECT *
+			FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC";
+			
+			$row_conditions = array($user->uid, $project);
+						
+			/* build the file name */
+			$filename = strtolower($user->name . '-project-' . $project_info->tid . '-' . date("Y-m-d") . '.txt');
+			
+			/* cleanup file name from commonly used special characters */
+			$not_used = array(" ", "_", "&","[","]");
+			$filename = str_replace($not_used, "-", $filename);
+    	}
+    	else
+    	{
+    		$event_date = arg(3);   		
+    		
+    		$row_sql = "SELECT * 
+    			FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = '%s' ORDER BY created DESC";
+			
+			$row_conditions = array($user->uid, $event_date);
+			
+    		/* build the file name */
+			$filename = strtolower($user->name . '-entry-date-' . $event_date . '.txt');
+			
+			/* cleanup file name from commonly used special characters */
+			$not_used = array(" ", "_", "&","[","]");
+			$filename = str_replace($not_used, "-", $filename);		 	
     	
-    	/*  get the term name */
-    	$project_info = taxonomy_term_load($project);
-    	
-    	/* build the file name */
-    	$filename = strtolower($user->name . '-project-' . $project_info->tid . '-' . date("Y-m-d") . '.txt');
-    	
-    	/* cleanup file name from commonly used special characters */
-    	$not_used = array(" ", "_", "&","[","]");
-    	$filename = str_replace($not_used, "-", $filename);
+    	}
     	
     	/*  set content headers */
     	drupal_set_header('Content-Type: text/csv');
     	drupal_set_header('Content-Disposition: attachment; filename=' . $filename);
+    	    	
     	
-    	$result = db_query('SELECT *
-			FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC', array($user->uid, $project));
-				
+    			
 		/* Result is returned as a iterable object that returns a stdClass object on each iteration */
     	
 		/* field headers */
-    	$count = 0; 
-    	while($head = db_fetch_array( $result )){
+    	$count = 0;
+    	
+    	$result = db_query($row_sql, $row_conditions);
+    	
+    	while($head = db_fetch_array( $result ))
+    	{
     		foreach($head as $key => $value){
 			  $header[$key] = $key; 
 			}
@@ -534,16 +552,25 @@ class timetracker{
 			}
     	}
     	
-    	print implode(',', $header) ."\r\n";
+    	$output =  implode(',', $header) ."\r\n";
     	
     	/* field values */
-    	while($record = db_fetch_array( $result )){
-			foreach($record as $value){
+    	
+    	$result = db_query($row_sql, $row_conditions);
+			
+    	while($row = db_fetch_array($result))
+    	{
+    		
+			foreach($row as $value){
 			  $values[] = '"' . str_replace('"', '""', decode_entities(strip_tags($value))) . '"'; 
 			}
-			print implode(',', $values) ."\r\n";
+			
+			$output .= implode(',', $values) . "\r\n";
+			
 			unset($values);
 		}
+		
+		print $output ;
 		
 	}
     

@@ -34,7 +34,7 @@ class timetracker{
         		);
         
         $var[$section .'_2'] = array(
-        		'text' => 'My Reports', 
+        		'text' => 'Project Reports', 
         		'path' => 'timetracker/timetracker/reports'
         		);
         
@@ -939,11 +939,12 @@ class timetracker{
 		$total_project_users = 0;
 		
 		$table_header = array(
-				array('data' => 'ID'),
-				array('data' => 'Name'),
-				array('data' => 'Total Users'),
-				array('data' => 'Total Hours'),
-				array('data' => 'Operations','colspan' => 2),			
+				array('data' => t('ID')),
+				array('data' => t('Name')),
+				array('data' => t('Total Users')),
+				array('data' => t('Status')),
+				array('data' => t('Total Hours')),
+				array('data' => t('Operations'),'colspan' => 2),			
 				);
 		
 		
@@ -980,10 +981,11 @@ class timetracker{
 						  'data' => array(
 						  	  array('data' => $record->project_id, 'class' => 'cell-1-'.$record->id), 
 						  	  array('data' => $record->project_name, 'class' => 'cell-2-'.$record->id),
-						  	  array('data' => $total_project_users, 'class' => 'cell-2-'.$record->id),
-						  	  array('data' => $total_project_hours, 'class' => 'cell-3-'.$record->id),
-						  	  array('data' => l(t('more info'), '/timetracker/project_info', array('attributes' => array('class' => 'project-info', 'id' => 'pj-info-' . $record->id))), 'class' => 'cell-4-'.$record->id, 'style' => 'white-space:nowrap'),
-						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/project_edit/' . $proj_array[$record->project_id], array('attributes' => array('class' => 'project-edit', 'id' => 'upd-' . $record->id))), 'class' => 'cell-5-'.$record->id) 
+						  	  array('data' => $total_project_users, 'class' => 'cell-3-'.$record->id),
+						  	  array('data' => $record->status, 'class' => 'cell-4-'.$record->id),
+						  	  array('data' => $total_project_hours, 'class' => 'cell-5-'.$record->id),
+						  	  array('data' => l(t('more info'), '/timetracker/project_info', array('attributes' => array('class' => 'project-info', 'id' => 'pj-info-' . $record->id))), 'class' => 'cell-6-'.$record->id, 'style' => 'white-space:nowrap'),
+						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/project_edit/' . $proj_array[$record->project_id], array('attributes' => array('class' => 'project-edit', 'id' => 'upd-' . $record->id))), 'class' => 'cell-7-'.$record->id) 
 				  
 						  	  ),
 						  'class' => 'row-'.$record->id,

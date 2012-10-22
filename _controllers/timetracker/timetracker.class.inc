@@ -77,11 +77,31 @@ class timetracker{
 		
 		if($check_entries->user_id <= 0)
 		{
-			
-			 
+		 
 			
 			$output .= '<div id="most-recent-events"><h2>' . t('Most recent entries') . '</h2>' ;
+			$table_header = array(
+				array('data' => 'ID'),
+				array('data' => 'Task'),
+				array('data' => 'Project'),
+				array('data' => 'Date'),
+				array('data' => 'Hours'),
+				array('data' => 'Operations','colspan' => 2),			
+				);
+			$entry_data[] = array(
+				'data' => array(
+					array('data' => '', 'class' => 'cell-1-'.$re_record->id), 
+					array('data' => '', 'class' => 'cell-2-'.$re_record->id), 
+					array('data' => '', 'class' => 'cell-3-'.$re_record->id), 
+					array('data' => '', 'class' => 'cell-4-'.$re_record->id),
+					array('data' => '', 'class' => 'cell-5-'.$re_record->id),
+					array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $re_record->id . '/' . $re_record->event_date, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $re_record->id))), 'class' => 'cell-6-'.$re_record->id),
+					array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$re_record->id, array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $re_record->id))), 'class' => 'cell-7-'.$re_record->id) 
+				),
+				'id' => 'recent-'.$re_record->id,
+						  );
 			
+			$output .= theme('table', $table_header,$entry_data) . '</div>';
 			
 			
 		}
@@ -436,6 +456,7 @@ class timetracker{
 				array('data' => 'ID', '' => 'id', 'sort' => 'asc'),
 				array('data' => 'Task', '' => 'project_user_task'),
 				array('data' => 'Date', '' => 'event_date'),
+				array('data' => 'Users', '' => 'project_users'),
 				array('data' => 'Hours', '' => 'project_hours'),
 				array('data' => 'Operations', '' => '', 'colspan' => 3),			
 				);
@@ -447,6 +468,18 @@ class timetracker{
 				// get vocabulary as options list
 				$voc = variable_get('timetracker_projects', 'projects');
 				$tree = taxonomy_get_tree($voc,0,NULL,true);
+				
+				$pj_users = db_query('SELECT DISTINCT user_id FROM {timetracker_project_events}');
+					
+	
+				/* Result is returned as a iterable object that returns a stdClass object on each iteration */
+							
+				while ($pj_record = db_fetch_object($pj_users))
+				{
+					$total_project_users += $pj_record->user_id;
+				}	
+				
+				
 			
 				$selected = '';  
 				$terms = '<select id="projects-'.$record['id'].'" name="projects">'; 
@@ -467,10 +500,11 @@ class timetracker{
 						  	  array('data' => $record['id'], 'class' => 'cell-1-'.$record['id']), 
 						  	  array('data' => $record['project_user_task'], 'class' => 'cell-2-'.$record['id']), 
 						  	  array('data' => $record['event_date'], 'class' => 'cell-3-'.$record['id']),
-						  	  array('data' => $record['project_hours'], 'class' => 'cell-4-'.$record['id']),
-						  	  array('data' => '<input type="hidden" name="list-projects_id" id="list-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-5-'.$record['id']),
-						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record['id'] . '/' . $record['event_date'], array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record['id']))), 'class' => 'cell-6-'.$record['id']),
-						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record['id'], array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record['id']))), 'class' => 'cell-7-'.$record['id']) 
+						  	  array('data' => $total_project_users, 'class' => 'cell-4-'.$record['id']),
+						  	  array('data' => $record['project_hours'], 'class' => 'cell-5-'.$record['id']),
+						  	  array('data' => '<input type="hidden" name="list-projects_id" id="list-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-6-'.$record['id']),
+						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record['id'] . '/' . $record['event_date'], array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record['id']))), 'class' => 'cell-7-'.$record['id']),
+						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record['id'], array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record['id']))), 'class' => 'cell-8-'.$record['id']) 
 				  
 						  	  ),
 						  'class' => 'row-'.$record['id'],
@@ -771,19 +805,15 @@ class timetracker{
     	/*  get the term name */
     	$project = check_plain($_POST['project']);
 		$project_info = taxonomy_get_term($project);
-    	
-    	$event_update = db_update('timetracker_project_events') // Table name no longer needs {}
-		  ->fields(array(
-		    'project_user_task' => $task,
-		    'project_name' => $project_info->name,
-		    'project_id' => $project_info->tid,
-			'project_hours' => $hours,
-			'changed' => date("Y-m-d H:i:s")
-		  ))
-		  ->condition('id', $id, '=')
-		  ->condition('user_id', $user->uid, '=')
-		  ->execute();
-		  
+		
+		$event_update = db_query("UPDATE {timetracker_project_events} SET 
+				project_user_task ='%s'," . 
+				"project_name = '%s'," . 
+				"project_id = %d," . 
+				"project_hours = %d" . ","  .
+				"changed = '%d'" . 
+				" WHERE id = %d AND user_id = %d", array($task,$project_info->name,$project_info->tid,$hours,date("Y-m-d H:i:s"),$id,$user->uid));
+		
 		if($event_update > 0)
 		{
 		 
@@ -872,7 +902,7 @@ class timetracker{
     	$variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
     	
     	/* check for available projects */
-    	$projects = db_query("SELECT * FROM {timetracker_projects} AS pj WHERE created_by = %d", array($user->uid));
+    	$projects = db_query("SELECT * FROM {timetracker_projects} WHERE created_by = %d", array($user->uid));
 		
 		/* show a list of the taxonomy terms used in the the vocbulary */
     	$output = drupal_get_form('timetracker_projects_add_', 'timetracker/timetracker/project_save');
@@ -894,46 +924,77 @@ class timetracker{
     	
     	/* get vocabulary as options list */
 		$voc = variable_get('timetracker_projects', 0);
+		
 		$tree = taxonomy_get_tree($voc,0,NULL,true);
+		
+		$total_project_hours = 0;
+		$total_project_users = 0;
 		
 		$table_header = array(
 				array('data' => 'ID'),
 				array('data' => 'Name'),
-				array('data' => 'Hours'),
+				array('data' => 'Total Users'),
+				array('data' => 'Total Hours'),
 				array('data' => 'Operations','colspan' => 2),			
 				);
-				
-		while ($record = db_fetch_array($projects))
+		
+		
+		while ($p_record = db_fetch_object($projects))
 		{
+			$proj_array[$p_record->project_id] = $p_record->project_id;				
+		}
+		
+		/* check for available projects */
+    	$projects = db_query("SELECT * FROM {timetracker_projects} WHERE created_by = %d", array($user->uid));
+		
+				
+		while ($record = db_fetch_object($projects))
+		{
+			$pj_users = db_query('SELECT project_hours, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.project_id = %d', array($proj_array[$record->project_id]));
+			$pj_hours = db_query('SELECT project_hours FROM {timetracker_project_events} e WHERE e.project_id = %d', array($proj_array[$record->project_id]));
+			
+
+			/* Result is returned as a iterable object that returns a stdClass object on each iteration */
+						
+			while ($pj_record = db_fetch_object($pj_users))
+			{
+				$total_project_users += $pj_record->us;
+			}
+
+			while ($pj_record = db_fetch_object($pj_hours))
+			{
+				$total_project_hours += $pj_record->project_hours;
+			}			
+			
 			$row_data[] = array(
 						  'data' => array(
-						  	  array('data' => $record['id'], 'class' => 'cell-1-'.$record['id']), 
-						  	  array('data' => $record['project_name'], 'class' => 'cell-2-'.$record['id']), 
-						  	  array('data' => $record['project_hours'], 'class' => 'cell-5-'.$record['id']),
-						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record['id'] . '/' . $record['event_date'], array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record['id']))), 'class' => 'cell-6-'.$record['id']),
-						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record['id'], array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record['id']))), 'class' => 'cell-7-'.$record['id']) 
+						  	  array('data' => $record->project_id, 'class' => 'cell-1-'.$record->id), 
+						  	  array('data' => $record->project_name, 'class' => 'cell-2-'.$record->id),
+						  	  array('data' => $total_project_users, 'class' => 'cell-2-'.$record->id),
+						  	  array('data' => $total_project_hours, 'class' => 'cell-3-'.$record->id),
+						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record->id . '/' . $record->event_date, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record->id))), 'class' => 'cell-4-'.$record->id),
+						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record->id, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->id))), 'class' => 'cell-5-'.$record->id) 
 				  
 						  	  ),
-						  'class' => 'row-'.$record['id'],
-						  );											
-			$total_hours += $record['project_hours'];
+						  'class' => 'row-'.$record->id,
+						  );
+			
+			$total_project_hours = 0;
+			$total_project_users = 0;		
 				  
 		}
 		
 		$row_data[] = array(
 							'data' => array(
 								l(t('export'),'timetracker/timetracker/myreport_csv/'),
-								'Total Hours:', 
-								array('data' => $total_hours , 'colspan' => 2, 'id' => 'total-user-hours')),
+								'', 
+								array('data' => '' , 'colspan' => 2, 'id' => 'total-user-hours')),
 							'id' => 'total-row-'.$date,
 						);	
+				
+		/* Format and print out the table. */		
 		
-		
-		/* Format and print out the table. */
-		
-		
-		$output .= '<div>'. theme('table', $table_header,$row_data) . '</div>';
-    	
+		$output .= '<div>'. theme('table', $table_header,$row_data) . '</div>';   	
 		
         $variables['content'] = $output;
         
@@ -951,13 +1012,13 @@ class timetracker{
     	$project_info = taxonomy_get_term($_POST['project_id']);
     	
     	/* clean the user input */
-    	$user_task = check_plain($_POST['user_task']);
+    	$user_task = $_POST['user_task'];
     	
     	/* clean user input */
-    	$project_hours = check_plain($_POST['hours_used']);
+    	$project_hours = $_POST['hours_used'];
     	
     	/* clean user input */
-    	$event_date = check_plain($_POST['event_date']);
+    	$event_date = $_POST['event_date'];
     	   	
     	
     	/* add record to user database */

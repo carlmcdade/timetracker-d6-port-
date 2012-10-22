@@ -845,26 +845,25 @@ function timetracker_projects_edit_()
 	// if we are on the edit page fill the values
 	$pid = check_plain(arg(3));
 	
-	$query = db_query("SELECT td.tid, td.name, td.description, tt.project_external_key, tt.created, tt.project_hours, g.project_group_name, g.project_group_prefix, s.* FROM 
+	$project = db_fetch_array(db_query("SELECT td.tid, td.name, td.description, tt.project_external_key, tt.created, tt.project_hours, g.project_group_name, g.project_group_prefix, s.* FROM 
 		{term_data} AS td 
 		LEFT JOIN {timetracker_projects} AS tt ON td.tid = tt.project_id 
 		LEFT JOIN {timetracker_project_groups} AS g ON g.project_group_id = tt.project_group_id 
-		LEFT JOIN {timetracker_project_status} AS s ON tt.status = s.id WHERE td.tid =%d", array( $pid ));
+		LEFT JOIN {timetracker_project_status} AS s ON tt.status = s.id WHERE td.tid =%d", array( $pid )));
 	
-	$project = (array)$query->execute()->fetchObject();
 	
 	// get the groups available
 	$list = db_query("SELECT * FROM {timetracker_project_groups}");
-	while ($group = db_fetch_object($group))
+	while ($group = db_fetch_object($list))
 	{
 		$groups[$group->project_group_id] = $group->project_group_name;
 	}
 	
 	// get the available status
-	$type = db_query("SELECT * FROM {timetracker_project_status}");
+	$status = db_query("SELECT * FROM {timetracker_project_status}");
 	while ($type = db_fetch_object($status))
 	{
-		$types[$status->id] = $status->status_name;
+		$types[$type->id] = $type->status_name;
 	}
 	
 	$form['add'] = array(
@@ -884,6 +883,9 @@ function timetracker_projects_edit_()
 		'#default_value' => html_entity_decode($project['name']),
 	);
 	
+	if(!empty($groups))
+	{
+		
 	$form['add']['project_group'] = array(
 		'#type' => 'select',
 		'#options' => $groups,
@@ -891,6 +893,15 @@ function timetracker_projects_edit_()
 		'#title' => t('Project group'),
 		'#description' => t('This will automatically add the prefix for the group. Example: choosing TTC will give "OP-"')
 	);
+	}
+	else
+	{
+		//
+		$form['add']['project_group'] = array(
+			'#type' => 'markup', 
+			'#value' => l(t('Add a project group'),'admin/timetracker/groups'),
+		);
+	}
 	
 	$form['add']['project_external_key'] = array(
 		'#type' => 'textfield', 

@@ -706,6 +706,21 @@ class timetracker{
     }
     
     
+    function project_edit()
+    {
+    	
+    	/* links */
+    	$variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
+    	
+    	
+    	/* show a list of the taxonomy terms used in the the vocbulary */
+    	$output = drupal_get_form('timetracker_projects_edit_', 'timetracker/timetracker/project_save');
+    	
+        $variables['content'] = $output;
+        
+        return _view('default', $variables);
+    }
+    
     function project_add()
     {
     	
@@ -814,10 +829,9 @@ class timetracker{
 		{
 		 
 		  /* limit to five days */
-    	$result = db_query("SELECT *
-			FROM {timetracker_project_events} e WHERE e.id = :id LIMIT 1", array(':id' => $id));
+    	$all = db_fetch_object(db_query("SELECT *
+			FROM {timetracker_project_events} e WHERE e.id = %d LIMIT 1", array($id)));
 			
-		$all = $result->fetchObject();
 			
 		
 			$output = '<tr class="event-added" id="row-' . $all->id . '">' .
@@ -834,13 +848,11 @@ class timetracker{
 			$row_id = $all->id;
 			
 		/* update the hours total for the day */
-		$result_hours = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = :uid AND e.event_date = :eid', array(':uid' => $user->uid,':eid' => $all->event_date));
+		$all_hours = db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = '%s'", array($user->uid,$all->event_date));
 				
-		/* Result is returned as a iterable object that returns a stdClass object on each iteration */
-		$all_hours = $result_hours->fetchAll();
 		
 		
-		foreach ($all_hours as $record)
+		while ($record = db_fetch_object($all_hours))
 		{
 			$total_hours += $record->project_hours;
 		}	
@@ -971,7 +983,7 @@ class timetracker{
 						  	  array('data' => $total_project_users, 'class' => 'cell-2-'.$record->id),
 						  	  array('data' => $total_project_hours, 'class' => 'cell-3-'.$record->id),
 						  	  array('data' => l(t('more info'), '/timetracker/project_info', array('attributes' => array('class' => 'project-info', 'id' => 'pj-info-' . $record->id))), 'class' => 'cell-4-'.$record->id, 'style' => 'white-space:nowrap'),
-						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record->id, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->id))), 'class' => 'cell-5-'.$record->id) 
+						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/project_edit/' . $proj_array[$record->project_id], array('attributes' => array('class' => 'project-edit', 'id' => 'upd-' . $record->id))), 'class' => 'cell-5-'.$record->id) 
 				  
 						  	  ),
 						  'class' => 'row-'.$record->id,

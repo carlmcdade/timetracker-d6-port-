@@ -282,6 +282,12 @@ function timetracker_init()
     */
     	drupal_add_css(drupal_get_path('module', APP_MODULE ) . '/css/anytime.c.css');
     	drupal_add_css(drupal_get_path('module', APP_MODULE ) . '/css/default.css');
+    	
+    	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/jquery.form.js');
+    	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/jquery.validate.js');
+    	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/additional-methods.js');
+        drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/anytime.js');
+    	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/mvc.js');
 }
 
 /**

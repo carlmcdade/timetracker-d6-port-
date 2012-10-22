@@ -59,11 +59,7 @@ class timetracker{
     		the jquery add-ons needed for the UI.
     	*/
     	
-    	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/jquery.form.js');
-    	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/jquery.validate.js');
-    	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/additional-methods.js');
-        drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/anytime.js');
-    	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/mvc.js');
+    	
     	
     	/* menu on the timetracker page from hook_links() function */
 		$variables['links'] = _menu_links($this->common->get_hooks('hook_links'), ' | ');
@@ -945,12 +941,12 @@ class timetracker{
 		}
 		
 		/* check for available projects */
-    	$projects = db_query("SELECT * FROM {timetracker_projects} WHERE created_by = %d", array($user->uid));
+    	$projects = db_query("SELECT * FROM {timetracker_projects} WHERE created_by = %d ORDER BY project_id DESC", array($user->uid));
 		
 				
 		while ($record = db_fetch_object($projects))
 		{
-			$pj_users = db_query('SELECT project_hours, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.project_id = %d', array($proj_array[$record->project_id]));
+			$pj_users = db_query('SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.project_id = %d GROUP BY user_id', array($proj_array[$record->project_id]));
 			$pj_hours = db_query('SELECT project_hours FROM {timetracker_project_events} e WHERE e.project_id = %d', array($proj_array[$record->project_id]));
 			
 
@@ -958,6 +954,8 @@ class timetracker{
 						
 			while ($pj_record = db_fetch_object($pj_users))
 			{
+				$project_user = user_load($pj_record->user_id);
+				$user_links .= '<li class="user-links">' . l($project_user->name, 'user/'. $pj_record->user_id) . '</li>';
 				$total_project_users += $pj_record->us;
 			}
 
@@ -972,15 +970,25 @@ class timetracker{
 						  	  array('data' => $record->project_name, 'class' => 'cell-2-'.$record->id),
 						  	  array('data' => $total_project_users, 'class' => 'cell-2-'.$record->id),
 						  	  array('data' => $total_project_hours, 'class' => 'cell-3-'.$record->id),
-						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record->id . '/' . $record->event_date, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record->id))), 'class' => 'cell-4-'.$record->id),
+						  	  array('data' => l(t('more info'), '/timetracker/project_info', array('attributes' => array('class' => 'project-info', 'id' => 'pj-info-' . $record->id))), 'class' => 'cell-4-'.$record->id, 'style' => 'white-space:nowrap'),
 						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record->id, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->id))), 'class' => 'cell-5-'.$record->id) 
 				  
 						  	  ),
 						  'class' => 'row-'.$record->id,
 						  );
 			
+			$row_data[] = array(
+						  'data' => array(
+						  	  array('data' => '<div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div><ul>' . $user_links .'</ul>', 'class' => 'cell-1-'.$record->id,'colspan' => 6), 
+						  	  
+						  	  ),
+						  'class' => 'info-row-'.$record->id,
+						  'style' => 'display:none'
+						  );
+			
 			$total_project_hours = 0;
-			$total_project_users = 0;		
+			$total_project_users = 0;
+			$user_links = '';
 				  
 		}
 		

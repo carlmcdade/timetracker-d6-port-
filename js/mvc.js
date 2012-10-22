@@ -187,9 +187,32 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 					$("tr:visible[class*='temp-form']").fadeOut("slow", function () {
 							$(this).css({display:"none"});
 					});
+					
+					$("tr:visible[class*='info-row-']").fadeOut("slow", function () {
+							$(this).css({display:"none"});
+					});
 
 			});
 			
+			////////////////////////////////////////////////////////////////////
+			
+			$("a.project-info").live("click", function(event) {
+					
+					event.preventDefault();
+					
+					var row = $(this).attr("id").split('-');
+					
+					$("tr:visible[class*='info-row-']").hide();
+					
+					$('tr.info-row-' + row[2]).fadeIn("slow", function () {
+							
+							$(this).css('display', '');
+							
+					});
+					
+					return false;
+
+			});
 			////////////////////////////////////////////////////////////////////
 			
 			$(".recentUpdate").live("click", function() {

@@ -777,9 +777,16 @@ function timetracker_projects_add_()
 		'#title' => t('Description'),
 	);
 	
+	// get the available status
+	$status = db_query("SELECT * FROM {timetracker_project_status}");
+	while ($type = db_fetch_object($status))
+	{
+		$types[$type->id] = $type->status_name;
+	}
+	
 	$form['add']['project_status'] = array(
 		'#type' => 'select',
-		'#options' => array('open','closed','frozen'),
+		'#options' => $types,
 		'#title' => t('Project status'),
 		'#default_value' => isset($project['status']) ? $project['status'] : '',
 		'#description' => t('Projects are automatically open unless changed here.')

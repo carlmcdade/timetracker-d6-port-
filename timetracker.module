@@ -452,9 +452,17 @@ function timetracker_mytime_()
 					'#prefix' => '',
 					'#suffix' => ''
 				  );
-			  }		  
-			  			  
-			  $form['event_date'] = array(
+			  }	
+			  else
+			  {
+			  
+				  $form['project_id'] = array(
+					  '#type' => 'markup',
+					  '#value' => l(t('Add project'),'timetracker/timetracker/project_add', array('attributes' => array('id' => 'add-project')))
+					);		  
+			  } 
+			  	  
+			 $form['event_date'] = array(
 				'#type' => 'textfield', 
 				'#title' => t('Date'),
 				'#size' => '10',

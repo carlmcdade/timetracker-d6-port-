@@ -421,8 +421,7 @@ class timetracker{
 			
 			if($start && !empty($start))
 			{
-				$result = db_query("SELECT *
-				FROM {timetracker_project_events} e WHERE e.event_date BETWEEN '%s' AND '%s' AND e.project_id = %d ORDER BY created DESC", array($start, $end, $project));
+				$result = db_query("SELECT e.*, u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id WHERE e.event_date BETWEEN '%s' AND '%s' AND e.project_id = %d ORDER BY event_date DESC", array($start, $end, $project));
 				
 				$pj_users = db_query("SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.event_date BETWEEN '%s' AND '%s' AND e.project_id = %d", array($start, $end, $project));
 				$pj_hours = db_query("SELECT project_hours FROM {timetracker_project_events} e WHERE event_date BETWEEN '%s' AND '%s' AND e.project_id = %d", array($start, $end, $project));
@@ -445,8 +444,7 @@ class timetracker{
 			else
 			{
 				//
-				$result = db_query("SELECT *
-				FROM {timetracker_project_events} e WHERE e.project_id = %d ORDER BY created DESC", array($project));
+				$result = db_query("SELECT e.* , u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id WHERE e.project_id = %d ORDER BY event_date DESC", array($project));
 				
 				$pj_users = db_query('SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.project_id = %d', array($project));
 				$pj_hours = db_query('SELECT project_hours FROM {timetracker_project_events} e WHERE e.project_id = %d', array($project));
@@ -482,7 +480,7 @@ class timetracker{
 		
 		
 		$table_header = array(
-				array('data' => 'ID', '' => 'id', 'sort' => 'asc'),
+				array('data' => 'Entry ID', '' => 'id', 'sort' => 'asc'),
 				array('data' => 'Task', '' => 'project_user_task'),
 				array('data' => 'User', '' => 'user_id'),
 				array('data' => 'Hours', '' => 'project_hours'),
@@ -518,7 +516,7 @@ class timetracker{
 						  'data' => array(
 						  	  array('data' => $record['id'], 'class' => 'cell-1-'.$record['id']), 
 						  	  array('data' => $record['project_user_task'], 'class' => 'cell-2-'.$record['id']), 
-						  	  array('data' => $record['user_id'], 'class' => 'cell-3-'.$record['id']), 
+						  	  array('data' => $record['user_name'], 'class' => 'cell-3-'.$record['id']), 
 						  	  array('data' => $record['project_hours'], 'class' => 'cell-4-'.$record['id']), 
 						  	  array('data' => $record['event_date'], 'class' => 'cell-5-'.$record['id']),
 						  	  array('data' => '<input type="hidden" name="list-projects_id" id="list-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-6-'.$record['id']),
@@ -553,14 +551,26 @@ class timetracker{
 		
 		$row_data[] = array(
 							'data' => array(
-								l(t('export'),'timetracker/timetracker/myreport_csv/' . $start .'/' . $end . '/' . $project),
-								'Total Users:', 
-								array('data' => $total_project_users, 'class' => 'cell-4-'.$record['id']),
-								'Total Hours:', 
-						  	    array('data' => $total_project_hours, 'class' => 'cell-5-'.$record['id']),
+								array('data' => t(''), 'class' => 'cell-10-'.$record['id'], 'colspan' => 5),
+								array('data' => t('Total Users: ') .$total_project_users, 'class' => 'cell-10-'.$record['id'], 'colspan' => 3),
+							),
+							'id' => 'total-users-row-'.$record['id'],
+						);
+		$row_data[] = array(
+							'data' => array(
+								array('data' => t(''), 'class' => 'cell-10-'.$record['id'], 'colspan' => 5),
+						  	    array('data' => t('Total Hours: ') . $total_project_hours, 'class' => 'cell-11-'.$record['id'], 'colspan' => 3),
 							),
 							'id' => 'total-row-'.$record['id'],
 						);
+		$row_data[] = array(
+							'data' => array(
+								array('data' => l(t('export'),'timetracker/timetracker/myreport_csv/' . $start .'/' . $end . '/' . $project), 'colspan' => 8),
+							),
+							'id' => 'total-export-'.$record['id'],
+						);
+		
+		
 		
 		
 		/* Format and print out the table. */

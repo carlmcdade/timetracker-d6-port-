@@ -750,7 +750,7 @@ class timetracker{
     	
     	
     	/* show a list of the taxonomy terms used in the the vocbulary */
-    	$output = drupal_get_form('timetracker_projects_edit_', 'timetracker/timetracker/project_save');
+    	$output = drupal_get_form('timetracker_projects_edit_', 'timetracker/timetracker/project_update');
     	
         $variables['content'] = $output;
         
@@ -834,7 +834,62 @@ class timetracker{
 		 drupal_goto(url('timetracker/timetracker/user'));
     }
     
-    
+    function project_update()
+    {
+    	/* we may need to know who by and when a project was created */
+    	global $user;
+    	
+    	$voc = variable_get('timetracker_projects', NULL);			
+		
+		$term = array();
+		$term['tid'] = check_plain($_POST['project_id']);
+		$term['name'] = check_plain($_POST['project_name']);
+		$term['description'] = check_plain($_POST['project_desc']);
+		$term['vid'] = $voc;
+		
+		/* save to the Drupal taxonomy system which creates a term/project */
+		taxonomy_save_term($term);
+						
+		$project_id = db_fetch_object(db_query("SELECT * FROM {timetracker_projects} AS tp WHERE project_id=%d", array($term['tid'])));						
+		
+    	// update the timetracker project table
+    	if(is_object($project_id))
+    	{
+			$project_info = db_query("UPDATE {timetracker_projects} 
+				SET " .
+				"project_name = '" . $term['name'] . "'," . 
+				"project_desc = '" . $term['description']  . "'," . 
+				"project_group_id = '" . check_plain($_POST['project_group']) . "'," . 
+				"project_external_key = '" . check_plain($_POST['project_external_key']) . "',"  .
+				"changed = '" . date("Y-m-d H:i:s") . "'," . 
+				"status = '" . check_plain($_POST['project_status']) . "'" .
+				" WHERE project_id= %d", array($term['tid']));
+					
+			drupal_set_message( t('project updated'));
+					
+		}
+		else
+		{		 
+					
+			$project_info = db_query("INSERT INTO {timetracker_projects} (project_id,project_group_id, project_name,project_desc,project_external_key,created,changed,status, vid) 
+				 VALUES(" .
+				"'" . $term['tid'] ."'," .
+				"'" . check_plain($_POST['project_group']) . "'," . 
+				"'" . $term['name'] ."'," . 
+				"'" . $term['description'] . "'," . 				 
+				"'" . check_plain($_POST['project_external_key']) . "'," . 
+				"'" . date("Y-m-d H:i:s") . "'," .
+				"'" . date("Y-m-d H:i:s") . "'," .
+				"'" . check_plain($_POST['project_status']) . "'," .
+				"'" . $voc . "'");
+					
+			drupal_set_message( t('project and taxonomy tables syncronised.'));
+				
+		}				
+		 
+		drupal_goto('timetracker/timetracker/myprojects');		
+    }
+        
     
     /*  the response to the mini-form for updating an entry */
     
@@ -990,7 +1045,7 @@ class timetracker{
 		}
 		
 		/* check for available projects */
-    	$projects = db_query("SELECT * FROM {timetracker_projects} tp JOIN {timetracker_project_status} ps ON ps.id=tp.status WHERE created_by = %d ORDER BY project_id DESC", array($user->uid));
+    	$projects = db_query("SELECT tp.*, ps.status_name FROM {timetracker_projects} tp JOIN {timetracker_project_status} ps ON ps.id=tp.status ORDER BY project_id DESC");
 		
 				
 		while ($record = db_fetch_object($projects))
@@ -1029,7 +1084,7 @@ class timetracker{
 			
 			$row_data[] = array(
 						  'data' => array(
-						  	  array('data' => '<div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div><ul>' . $user_links .'</ul>', 'class' => 'cell-1-'.$record->id,'colspan' => 6), 
+						  	  array('data' => '<div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div><ul>' . $user_links .'</ul>', 'class' => 'cell-1-'.$record->id,'colspan' => 7), 
 						  	  
 						  	  ),
 						  'class' => 'info-row-'.$record->id,

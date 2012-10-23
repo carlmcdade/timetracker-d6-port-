@@ -850,6 +850,8 @@ function timetracker_projects_category_add_()
 function timetracker_projects_edit_()
 {
 	global $user;
+	
+	$args = func_get_args();
 		
 	// if we are on the edit page fill the values
 	$pid = check_plain(arg(3));
@@ -938,8 +940,20 @@ function timetracker_projects_edit_()
 		'#value' => t('Update project'),
 		'#submit' => array('Submit'),
 	);
+	
+	// use this form for other updates to the table redirect by action
+	
+	if(!empty($args[1]))
+	{
+		$action = $args[1];
+	}
+	else
+	{
+		$action = 'admin/timetracker/project_update';	
+	}
+		
 			  
-	$form['#action'] = url('admin/timetracker/project_update');// admin class
+	$form['#action'] = url($action);// admin class
 			  			  
 	return $form;
 	

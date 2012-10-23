@@ -440,27 +440,21 @@ function timetracker_mytime_()
 				'#prefix' => '<table id="task-table"><tr><td>',
 			  );
 			  
-			  if(!empty($terms))
+			  if(empty($terms))
 			  {
 			  
-				  $form['project_id'] = array(
+				 $terms = array(t('No projects'));
+			  }
+			  
+			   $form['project_id'] = array(
 					'#type' => 'select',
 					'#title' => t('Projects'),
 					'#options' => $terms,
 					'#default_value' => $terms[0],
-					'#description' => l(t('Add project'),'timetracker/timetracker/project_add', array('attributes' => array('id' => 'add-project'))),
+					//'#description' => l(t('Add project'),'timetracker/timetracker/project_add', array('attributes' => array('id' => 'add-project'))),
 					'#prefix' => '',
 					'#suffix' => ''
 				  );
-			  }	
-			  else
-			  {
-			  
-				  $form['project_id'] = array(
-					  '#type' => 'markup',
-					  '#value' => l(t('Add project'),'timetracker/timetracker/project_add', array('attributes' => array('id' => 'add-project')))
-					);		  
-			  } 
 			  	  
 			 $form['event_date'] = array(
 				'#type' => 'textfield', 

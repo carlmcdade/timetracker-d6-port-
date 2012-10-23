@@ -69,6 +69,7 @@ class timetracker{
         
 			/* limit to five days */ 
 		$output = drupal_get_form('timetracker_mytime_');
+		$output .= drupal_get_form('timetracker_projects_add_', 'timetracker/timetracker/project_save');
 		
 		
 		if($check_entries->user_id <= 0)

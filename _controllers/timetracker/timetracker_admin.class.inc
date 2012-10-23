@@ -81,9 +81,7 @@ class timetracker_admin{
 	}
 	
 	function reports($extend = NULL)
-    {
-        
-			
+    {			
 		// admin links
 		$variables['links'] = _menu_links($this->admin_links(),' | ');
 			
@@ -128,15 +126,14 @@ class timetracker_admin{
 								  $record->project_hours,
 								  $record->event_date,
 								  $record->created,
-								  l(t('delete'), '', array('attributes' => array('class' => array('delete-time'), 'id' => 'del-' . $record->id))),
-								  l(t('update'), APP_MODULE .'/timetracker/update_time/'.$record->id, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $record->id))) 
+								  l(t('delete'), '', array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record->id))),
+								  l(t('update'), APP_MODULE .'/timetracker/update_time/'.$record->id, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->id))) 
 					  
 								  ),
-							  'id' => array('id' => 'row-'.$record->id),
+							  'id' => 'row-'.$record->id,
 							  );
 			}
-			
-			
+						
 			// Format and print out the table.
 			$output = theme('table',$table_header, $row_data);
 			
@@ -228,7 +225,7 @@ class timetracker_admin{
 				/* get the total number of hours for each project */
 				$hours_total = 0;
 				
-				$hours = db_query("SELECT e.project_hours FROM {timetracker_project_events} AS e WHERE project_id =" . $record->tid);
+				$hours = db_query("SELECT e.project_hours FROM {timetracker_project_events} AS e WHERE project_id =%d", array($record->tid));
 					
 						
 				while($event = db_fetch_object($hours))
@@ -238,17 +235,17 @@ class timetracker_admin{
 				
 				//$output .= print_r($record,1);
 				$row_data[] = array(
-					'data' => array(
-						$record->tid,
-						$record->project_group_name, 
-						$record->name,
-						$record->project_group_prefix . '-' . $record->project_external_key,
-						$record->description,
-						$hours_total,
-						$record->created,
-						$record->status_name,
-						l(t('edit'), 'admin/'. APP_MODULE .'/project_edit/'.$record->tid, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $record->tid))) 
-						),
+						'data' => array(
+								$record->tid,
+								$record->project_group_name, 
+								$record->name,
+								$record->project_group_prefix . '-' . $record->project_external_key,
+								$record->description,
+								$hours_total,
+								$record->created,
+								$record->status_name,
+								l(t('edit'), 'admin/'. APP_MODULE .'/project_edit/'.$record->tid, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->tid))) 
+							),
 						'id' => 'row-'.$record->tid,
 						);
 			
@@ -458,16 +455,16 @@ class timetracker_admin{
 			{				
 			
 				//$output .= print_r($record,1);
-				$row_data[] = array(
-					'data' => array(
-						$record->project_group_id,
-						$record->project_group_name, 
-						$record->project_group_prefix,
-						$record->description,
-						l(t('edit'), 'admin/'. APP_MODULE .'/group_edit/'.$record->tid, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $record->tid))) 
-						),
+					$row_data[] = array(
+						'data' => array(
+							$record->project_group_id,
+							$record->project_group_name, 
+							$record->project_group_prefix,
+							$record->description,
+							l(t('edit'), 'admin/'. APP_MODULE .'/group_edit/'.$record->tid, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->tid))) 
+							),
 						'id' => 'row-'.$record->project_group_id,
-						);
+					);
 			
 			}
 			// show projects add form 

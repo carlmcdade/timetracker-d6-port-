@@ -144,7 +144,7 @@ class timetracker{
     		
     		/* limit to five days */
     		$all = db_query("SELECT *
-			FROM {timetracker_project_events} e WHERE e.user_id = %d AND event_date = '" . $date. "' ORDER BY created DESC LIMIT 1", array($user->uid));
+			FROM {timetracker_project_events} e WHERE e.user_id = %d AND event_date = '%s' ORDER BY created DESC LIMIT 1", array($user->uid, $date));
 			
 			while ($record = db_fetch_object($all))
 			{
@@ -156,9 +156,9 @@ class timetracker{
 							'<td class="event-date cell-4-' . $record->id . '"><a href="#'. $record->event_date .'">' . $record->event_date . '</a></td>' .
 							'<td class="cell-5-' . $record->id . '">' . $record->project_hours . '</td>' .
 							'<td class="cell-6-' . $record->id . '">' .
-									l(t('delete'), 'timetracker/timetracker/delete_time/' . $record->id . '/' . $record->project_id, array('attributes' => array('class' => array('delete-time'), 'id' => 'del-' . $record->id))) . '</td>' .
+									l(t('delete'), 'timetracker/timetracker/delete_time/' . $record->id . '/' . $record->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record->id))) . '</td>' .
 							'<td class="cell-7-' . $record->id . '">' .
-									l(t('update'), '', array('attributes' => array('class' => array('update-recent-time'), 'id' => 'upd-' . $record->id))) . '</td>' .					  
+									l(t('update'), '', array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $record->id))) . '</td>' .					  
 							'</tr>'. "\n" .
 							'<tr id="recent-form-row-'.$record->id .'" style="display:none" class=" temp-form">' . 
 							'<td colspan="7"><div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
@@ -866,9 +866,9 @@ class timetracker{
 					  '<td class="event-date cell-4-' . $all->id . '">' . $all->event_date . '</td>' .
 					  '<td class="cell-5-' . $all->id . '">' . $all->project_hours . '</td>' .
 					  '<td class="cell-6-' . $all->id . '">' .
-					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => array('delete-time'), 'id' => 'del-' . $all->id))) . '</td>' .
+					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $all->id))) . '</td>' .
 					  '<td class="cell-7-' . $all->id . '">' .
-						l(t('update'), APP_MODULE .'/timetracker/update_time/'.$all->id, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $all->id))) . '</td>' .
+						l(t('update'), APP_MODULE .'/timetracker/update_time/'.$all->id, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $all->id))) . '</td>' .
 					  '</tr>';
 			$row_id = $all->id;
 			
@@ -1192,9 +1192,9 @@ class timetracker{
 					  '<td class="event-date cell-4-' . $all->id . '">' . $all->event_date . '</td>' .
 					  '<td class="cell-5-' . $all->id . '">' . $all->project_hours . '</td>' .
 					  '<td class="cell-6-' . $all->id . '">' .
-					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => array('delete-time'), 'id' => 'del-' . $all->id))) . '</td>' .
+					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $all->id))) . '</td>' .
 					  '<td class="cell-7-' . $all->id . '">' .
-						l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$all->id, array('attributes' => array('class' => array('update-time'), 'id' => 'upd-' . $all->id))) . '</td>' .
+						l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$all->id, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $all->id))) . '</td>' .
 					  '</tr>';
 					  
 			$recent = '<tr class="event-added recent-'. $all->id .'" id="recent-' . $all->id . '">' .
@@ -1204,9 +1204,9 @@ class timetracker{
 					  '<td class="event-date cell-4-' . $all->id . '"><a href="#' . $all->event_date . '">' . $all->event_date . '</a></td>' .
 					  '<td class="cell-5-' . $all->id . '">' . $all->project_hours . '</td>' .
 					  '<td class="cell-6-' . $all->id . '">' .
-					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => array('delete-time'), 'id' => 'del-' . $all->id))) . '</td>' .
+					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $all->id))) . '</td>' .
 					  '<td class="cell-7-' . $all->id . '">' .
-						l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$all->id, array('attributes' => array('class' => array('update-recent-time'), 'id' => 'upd-' . $all->id))) . '</td>' .
+						l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$all->id, array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $all->id))) . '</td>' .
 					  '</tr>';
 					  
 			$row_id = $all->id;

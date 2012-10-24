@@ -1,0 +1,152 @@
+<?php
+// timetracker.install
+
+/*
+manual install for phpmyAdmin
+
+# Dump of table timetracker_project_events
+# ------------------------------------------------------------
+
+CREATE TABLE `timetracker_project_events` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) DEFAULT NULL,
+  `project_id` int(10) DEFAULT NULL,
+  `project_name` varchar(32) DEFAULT NULL,
+  `project_user_task` varchar(255) DEFAULT NULL,
+  `event_date` date DEFAULT NULL,
+  `project_hours` int(4) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `changed` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table timetracker_project_groups
+# ------------------------------------------------------------
+
+CREATE TABLE `timetracker_project_groups` (
+  `project_group_id` int(10) NOT NULL AUTO_INCREMENT,
+  `project_group_name` varchar(32) NOT NULL,
+  `project_group_prefix` varchar(12) NOT NULL,
+  `project_group_description` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`project_group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table timetracker_project_status
+# ------------------------------------------------------------
+
+CREATE TABLE `timetracker_project_status` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `status_name` varchar(16) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table timetracker_projects
+# ------------------------------------------------------------
+
+CREATE TABLE `timetracker_projects` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `project_group_id` int(10) DEFAULT NULL,
+  `project_id` int(10) DEFAULT NULL,
+  `project_name` varchar(255) DEFAULT NULL,
+  `project_external_key` varchar(32) DEFAULT NULL,
+  `project_desc` varchar(255) DEFAULT NULL,
+  `project_hours` int(4) DEFAULT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `changed` datetime NOT NULL,
+  `vid` int(10) NOT NULL,
+  `status` int(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_external_key` (`project_external_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+
+*/
+
+function timetracker_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      // the {tablename} syntax is so multisite installs can add a
+      // prefix to the table name as set in the settings.php file
+      
+      db_query("CREATE TABLE {timetracker_projects} (
+		  `id` int(10) NOT NULL AUTO_INCREMENT,
+		  `project_group_id` int(10) DEFAULT NULL,
+		  `project_id` int(10) DEFAULT NULL,
+		  `project_name` varchar(255) DEFAULT NULL,
+		  `project_external_key` varchar(32) DEFAULT NULL,
+		  `project_desc` varchar(255) DEFAULT NULL,
+		  `project_hours` int(4) DEFAULT NULL,
+		  `created_by` int(11) DEFAULT NULL,
+		  `created` datetime NOT NULL,
+		  `changed` datetime NOT NULL,
+		  `vid` int(10) NOT NULL,
+		  `status` int(4) NOT NULL DEFAULT '0',
+		  PRIMARY KEY (`id`),
+		  UNIQUE KEY `project_external_key` (`project_external_key`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	  
+	  //
+      
+      db_query("CREATE TABLE {timetracker_project_events} (
+		  `id` int(10) NOT NULL AUTO_INCREMENT,
+		  `user_id` int(10) DEFAULT NULL,
+		  `project_id` int(10) DEFAULT NULL,
+		  `project_name` varchar(32) DEFAULT NULL,
+		  `project_user_task` varchar(255) DEFAULT NULL,
+		  `event_date` date DEFAULT NULL,
+		  `project_hours` int(4) DEFAULT NULL,
+		  `created` datetime NOT NULL,
+		  `changed` datetime NOT NULL,
+		  PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	  
+	  //
+      
+      db_query("CREATE TABLE {timetracker_project_groups} (
+		  `project_group_id` int(10) NOT NULL AUTO_INCREMENT,
+		  `project_group_name` varchar(32) NOT NULL,
+		  `project_group_prefix` varchar(12) NOT NULL,
+		  `project_group_description` varchar(255) DEFAULT NULL,
+		  PRIMARY KEY (`project_group_id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	  
+	  //
+	  
+	  db_query("CREATE TABLE {timetracker_project_status} (
+		  `id` int(10) NOT NULL AUTO_INCREMENT,
+		  `status_name` varchar(16) NOT NULL,
+		  PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+			  
+      break;
+  }
+}
+
+function timetracker_uninstall()
+{
+	// Delete menu links.
+	db_query("DELETE FROM {menu_links} WHERE module = 'timetracker'");
+	menu_cache_clear_all();
+	
+	// Remove tables.
+	db_query("DROP TABLE {timetracker_projects}");
+	db_query("DROP TABLE {timetracker_project_events}");
+	db_query("DROP TABLE {timetracker_project_groups}");
+	db_query("DROP TABLE {timetracker_project_status}");
+	
+	// Remove variables which is defined in our module
+	variable_del('timetracker_projects');
+  
+}
+
+?>

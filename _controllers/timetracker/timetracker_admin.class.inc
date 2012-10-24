@@ -407,7 +407,7 @@ class timetracker_admin{
 
 		$voc = taxonomy_save_vocabulary($vocabulary); 
 		
-		variable_set('timetracker_projects', $voc ,0);	
+		variable_set('timetracker_projects', $voc , NULL);	
 				
 		drupal_set_message(t('Project category added and set  to timetracker list'));
 		
@@ -424,7 +424,7 @@ class timetracker_admin{
         $variables['links'] = _menu_links($this->admin_links(),' | ');
                 
     	// get vocabulary as options list
-		$voc = variable_get('timetracker_projects', 0);
+		$voc = variable_get('timetracker_projects', NULL);
 		$tree = taxonomy_get_tree($voc,0,NULL,true);
 		
 		$table_header = array(

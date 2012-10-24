@@ -72,6 +72,9 @@ CREATE TABLE `timetracker_projects` (
 */
 
 function timetracker_install() {
+	
+
+		
   switch ($GLOBALS['db_type']) {
     case 'mysql':
     case 'mysqli':
@@ -127,9 +130,86 @@ function timetracker_install() {
 		  `status_name` varchar(16) NOT NULL,
 		  PRIMARY KEY (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	  
+	  db_query("INSERT INTO {timetracker_project_status} (`id`, `status_name`) VALUES
+		(1, 'open'),
+		(2, 'closed'),
+		(3, 'frozen'),
+		(4, 'private')");
+	  
+	  db_query("INSERT INTO `menu_links` (`menu_name`, `mlid`, `link_path`, `router_path`, `link_title`, `options`, `module`)
+	  	  VALUES('features', NULL, 'timetracker/timetracker/user', 'timetracker/%/%', 'My time', 'a:0:{}', 'timetracker')");
 			  
       break;
   }
+  
+  menu_cache_clear_all();
+  
+ /* //
+  $mlid = 0;
+  $menu_name = 'features';
+  $plid = 0;
+  $link_path = 'timetracker/timetracker/user';
+  $router_path = 'timetracker/timetracker/user';
+  $hidden = 0;
+  $_external = 0;
+  $has_children = 0;
+  $expanded = 0;
+  $weight = 0;
+  $description = 'Time management system'; 
+  $module = 'timetracker';
+  $link_title ='My Time';
+  $options['attributes'] = array('title' => $description);
+  $customized = 0;
+  $updated = 0;
+  
+  
+  
+  db_query("INSERT INTO `menu_links` (`menu_name`, `mlid`, `link_path`, `router_path`, `link_title`, `options`, `module`)
+VALUES('features', NULL, 'timetracker/timetracker/user', 'timetracker/timetracker/user', 'My time', 'a:0:{}', 'timetracker');
+");
+      );
+      
+      $form_state = array();
+		$form_state['values']['menu'] = array(
+		  'link_path' => 'timetracker/timetracker/user',
+		  'link_title' => 'My time',
+		  'description' => '',
+		  'enabled' => 1,
+		  'expanded'      => 0,
+		  'parent'        => 'features',
+		  'weight'        => 0,
+		  'customized'    => 1,
+		);
+		drupal_execute('menu_edit_item', $form_state, 'add', NULL, array('menu_name' => 'primary-links'));
+
+	$form_state = array();
+	$form_state['values']['menu'] = array(
+		'link_path' => 'timetracker/timetracker/user',
+		'link_title' => 'My time',
+		'description' => 'Time management',
+		'enabled' => 1,
+		'expanded'      => 0,
+		'parent'        => 'features',
+		'weight'        => 0,
+		'customized'    => 1,
+	);
+		
+	drupal_execute('menu_edit_item', $form_state, 'add', NULL, array('menu_name' => 'features'));
+	menu_cache_clear_all();
+      
+      
+    $link = array();
+	$link['link_title'] = "My time";
+	$link['link_path'] = 'timetracker/timetracker/user';
+	$link['menu_name'] = 'features';
+	$link['module'] = "menu";
+	menu_link_save( $link );
+	*/
+	
+		
+
+  
 }
 
 function timetracker_uninstall()

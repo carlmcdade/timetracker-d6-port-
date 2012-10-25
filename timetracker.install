@@ -73,7 +73,15 @@ CREATE TABLE `timetracker_projects` (
 
 function timetracker_install() {
 	
-
+  $link = array();
+	$link['link_title'] = "My time";
+	$link['link_path'] = 'timetracker/timetracker/user';
+	$link['menu_name'] = 'features';
+	$link['enabled'] = 1;
+	$link['module'] = "timetracker";
+	menu_link_save( $link );
+	
+	menu_cache_clear_all();
 		
   switch ($GLOBALS['db_type']) {
     case 'mysql':
@@ -136,14 +144,10 @@ function timetracker_install() {
 		(2, 'closed'),
 		(3, 'frozen'),
 		(4, 'private')");
-	  
-	  db_query("INSERT INTO `menu_links` (`menu_name`, `mlid`, `link_path`, `router_path`, `link_title`, `options`, `module`)
-	  	  VALUES('features', NULL, 'timetracker/timetracker/user', 'timetracker/%/%', 'My time', 'a:0:{}', 'timetracker')");
-			  
+	   
       break;
   }
   
-  menu_cache_clear_all();
   
  /* //
   $mlid = 0;
@@ -203,8 +207,12 @@ VALUES('features', NULL, 'timetracker/timetracker/user', 'timetracker/timetracke
 	$link['link_title'] = "My time";
 	$link['link_path'] = 'timetracker/timetracker/user';
 	$link['menu_name'] = 'features';
-	$link['module'] = "menu";
+	$link['enabled'] => 1,
+	$link['module'] = "timetracker";
 	menu_link_save( $link );
+	
+	menu_cache_clear_all();
+	
 	*/
 	
 		

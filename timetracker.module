@@ -607,6 +607,11 @@ function timetracker_myreports_()
 				'#prefix' => '<td>',
 				'#suffix' => '</td>'
 			  );
+	
+	$form['user_id'] = array(   
+				'#type' => 'textfield',   
+				'#autocomplete_path' => 'user/autocomplete'  
+				); 
 			  
 	$form['submit'] = array(
 			  	 '#type' => 'submit', 
@@ -617,9 +622,8 @@ function timetracker_myreports_()
 			  );
 	
 	$form['clear'] = array(
-			  	 '#type' => 'button', 
-			  	 '#value' => t('clear'),
-			  	 '#submit' => array('Clear'),
+			  	 '#type' => 'markup', 
+			  	 '#value' => '<input class="clear" type="button" value="">',
 			  	 '#prefix' => '<td>',
 				 '#suffix' => '</td></tr></table>'
 			  );

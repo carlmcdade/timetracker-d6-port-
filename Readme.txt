@@ -34,27 +34,25 @@ for all projects(terms)
 
 Create groups:
 
-Projects can be given a group designation for bookeeping purposes. Setting a group name and a 
-a prefix to be used when creating projects(terms).
+Projects can be given a group designation for bookeeping purposes. Setting a group name and a prefix 
+to be used when creating projects(terms).
 
 Create projects:
 
-Projects are terms in the choosen vocabulary. Because terms(Projects) have no
-fields information on them is stored separately in in the timetracker_projects
-database table.
+Projects are terms in the choosen vocabulary. Because terms(Projects) have no fields information on
+them is stored separately in in the timetracker_projects database table.
 
 User entries:
 
 
 Project status:
 
-Four project states are set on installation. Status has no UI in this version so 
-any changes must be made in the database.
+Four project states are set on installation. Status has no UI in this version so any changes must be
+made in the database.
 
 Development notes:
 
-Timetracker is based on the Movico (MVC OOP) architecture. This allows for easy debugging
-and modifications.
+Timetracker is based on the Movico (MVC OOP) architecture. This allows for easy debugging and modifications.
 
 
 Time tracker is sponsered by Tactical Technology Collective (http://tacticaltech.org) and 

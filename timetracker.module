@@ -610,7 +610,7 @@ function timetracker_myreports_()
 	
 	$form['user_id'] = array(   
 				'#type' => 'textfield',   
-				'#autocomplete_path' => 'user/autocomplete' 
+				'#autocomplete_path' => 'user/autocomplete', 
 				'#prefix' => '<td class="no-label">',
 				'#suffix' => '</td>'
 				); 

@@ -121,8 +121,23 @@ class timetracker{
         
     }
     
-    function dailyreport($today = FALSE, $date = NULL)
-    {
+function user_autocomplete($string = '') 
+{
+  
+	$part = explode(',', $string);
+	$matches = array();
+  
+    $result = db_query_range("SELECT name FROM {users} WHERE LOWER(name) LIKE LOWER('%s%%')", $part[2], 0, 10);
+    while ($user = db_fetch_object($result)) {
+      $matches[$user->name] = check_plain($user->name);
+    }
+  
+  drupal_json($matches);
+  exit();
+}
+    
+function dailyreport($today = FALSE, $date = NULL)
+{
     	global $user;
     	
     	$total_hours = 0;

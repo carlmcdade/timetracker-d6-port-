@@ -23,7 +23,7 @@ Create projects:
 User entries:
 
 
-Time tracker is sponsered by Tactical Technology Collective (tacticaltech.org) and 
+Time tracker is sponsered by Tactical Technology Collective (http://tacticaltech.org) and 
 is distributed under the GNU GENERAL PUBLIC LICENSE Version 3.(http://www.gnu.org/copyleft/gpl.html)
 
 ================================================================================

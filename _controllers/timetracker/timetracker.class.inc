@@ -577,7 +577,7 @@ class timetracker{
 		}
 		else
 		{
-			$filename = date("Y-m-d H:i:s") . '/';
+			$filename = 'project/';
 		}
 		
 		
@@ -646,6 +646,22 @@ class timetracker{
 			$not_used = array(" ", "_", "&","[","]");
 			$filename = str_replace($not_used, "-", $filename);
 				
+    	}
+    	elseif(arg(3) == 'project' && is_numeric(arg(4)))
+    	{
+    		//  		
+    		
+    		$row_sql = "SELECT * 
+    			FROM {timetracker_project_events} e WHERE e.project_id = '%s' ORDER BY created DESC";
+			
+			$row_conditions = array(arg(4));
+			
+    		/* build the file name */
+			$filename = strtolower($user->name . '-project-' . arg(4) . '.txt');
+			
+			/* cleanup file name from commonly used special characters */
+			$not_used = array(" ", "_", "&","[","]");
+			$filename = str_replace($not_used, "-", $filename);	
     	}
     	else
     	{

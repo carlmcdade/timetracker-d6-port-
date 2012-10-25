@@ -597,36 +597,38 @@ function timetracker_myreports_()
 				'#prefix' => '<td>',
 				'#suffix' => '</td>'
 			  );
+	
+	$form['user_id'] = array(   
+				'#type' => 'textfield', 
+				'#title' => t('User'),
+				'#autocomplete_path' => 'user/autocomplete', 
+				'#prefix' => '<td class="no-label">',
+				'#suffix' => '</td>'
+				); 
     
     $form['my_projects_id'] = array(
 				'#type' => 'select',
 				'#title' => t('Projects'),
 				'#options' => $terms,
 				'#default_value' => $project,
-				'#description' => t('Choose another project to show your accumulated time.'),
 				'#prefix' => '<td>',
-				'#suffix' => '</td>'
+				'#suffix' => '</td></tr>'
 			  );
 	
-	$form['user_id'] = array(   
-				'#type' => 'textfield',   
-				'#autocomplete_path' => 'user/autocomplete', 
-				'#prefix' => '<td class="no-label">',
-				'#suffix' => '</td>'
-				); 
+	
 			  
 	$form['submit'] = array(
 			  	 '#type' => 'submit', 
 			  	 '#value' => t('Show report'),
 			  	 '#submit' => array('Submit'),
-			  	 '#prefix' => '<td class="no-label">',
-				 '#suffix' => '</td>'
+			  	 '#prefix' => '<tr><td colspan="4" align="center" class="no-label">',
+				 '#suffix' => ''
 			  );
 	
 	$form['clear'] = array(
 			  	 '#type' => 'markup', 
-			  	 '#value' => '<input class="no-label clear" type="button" value="">',
-			  	 '#prefix' => '<td>',
+			  	 '#value' => '<input class="form-submit no-label clear" type="reset" value="Clear">',
+			  	 '#prefix' => '',
 				 '#suffix' => '</td></tr></table>'
 			  );
 			  

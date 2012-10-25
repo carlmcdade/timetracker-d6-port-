@@ -16,8 +16,9 @@ Module activation is standard and creates the necessary database tables.
 
 Create menu link:
 
-Add a link to the features menu with the path of "timetracker/timetracker/users"
+Add a link to the features menu with the path of "timetracker/timetracker/user"
 This link will automatically have an icon set. The icon can be changed via the css file.
+If a question mark icon is shown then the path used in the link setting is incorrect.
 
 
 Set permissions:

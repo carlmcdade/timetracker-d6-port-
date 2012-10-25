@@ -564,9 +564,26 @@ class timetracker{
 							),
 							'id' => 'total-row-'.$record['id'],
 						);
+		
+		// determine the search settings and create a filename. default to today if no date set
+		
+		if($start != '' && $end != '')
+		{
+			$filename = $start .'/' . $end . '/';
+		}
+		elseif($start != '' && $end == '')
+		{
+			$filename = $start .'/';
+		}
+		else
+		{
+			$filename = date("Y-m-d H:i:s") . '/';
+		}
+		
+		
 		$row_data[] = array(
 							'data' => array(
-								array('data' => l(t('export'),'timetracker/timetracker/myreport_csv/' . $start .'/' . $end . '/' . $project), 'colspan' => 8),
+								array('data' => l(t('export'),'timetracker/timetracker/myreport_csv/' . $filename . $project), 'colspan' => 8),
 							),
 							'id' => 'total-export-'.$record['id'],
 						);

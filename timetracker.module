@@ -613,6 +613,14 @@ function timetracker_myreports_()
 			  	 '#value' => t('Show report'),
 			  	 '#submit' => array('Submit'),
 			  	 '#prefix' => '<td>',
+				 '#suffix' => '</td>'
+			  );
+	
+	$form['clear'] = array(
+			  	 '#type' => 'button', 
+			  	 '#value' => t('clear'),
+			  	 '#submit' => array('Clear'),
+			  	 '#prefix' => '<td>',
 				 '#suffix' => '</td></tr></table>'
 			  );
 			  

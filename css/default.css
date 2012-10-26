@@ -295,4 +295,21 @@ div.working-indicator
 	display: none;
 }
 
+#message-green{
+    height:30px;
+    background: #CCFFCC;
+    border:1px solid #00FF00;
+}
+
+html.js input.throbbing 
+{ 
+	background:transparent url('../images/indicator.gif') 10px 40px no-repeat; 
+}
+
+html.js input.form-autocomplete {
+    background-position: 100% 2px;
+    display: block;
+}
+
+
 

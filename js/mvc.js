@@ -324,6 +324,17 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 					$('#timetracker-myreports-csv-').submit();
 				
 			});
+			
+			////////////////////////////////////////////////////////////////////
+			
+			$(".close-green").click(function () {
+				$("#message-green").fadeOut("slow");
+			});
+			
+			
+			setTimeout(function(){
+				$("#message-green").fadeOut("slow");
+			},5000)
 						
 
 		  // container end

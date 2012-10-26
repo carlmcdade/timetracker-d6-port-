@@ -281,7 +281,7 @@ function timetracker_init()
    		style sheets
     */
     	drupal_add_css(drupal_get_path('module', APP_MODULE ) . '/css/anytime.c.css');
-    	drupal_add_css(drupal_get_path('module', APP_MODULE ) . '/css/default.css');
+    	
     	
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/jquery.form.js');
     	drupal_add_js(drupal_get_path('module', APP_MODULE ) . '/js/jquery.validate.js');
@@ -1049,6 +1049,26 @@ function timetracker_groups_add_()
 			  			  
 	return $form;
 	
+}
+
+
+/**
+* Implementation of hook_registry_alter
+*/
+function timetracker_theme_registry_alter(&$theme_registry) {
+ 
+  $theme_registry['node']['theme paths'][] = drupal_get_path('module', APP_MODULE ) . '/_views';
+          
+}
+
+//
+function timetracker_preprocess_page(&$variables)
+{
+	
+	$query_string = '?' . substr(variable_get('css_js_query_string', '0'), 0, 1);		
+	$variables['styles'] = drupal_get_css() . 
+	'<link type="text/css" rel="stylesheet" media="all" href="/'.
+	drupal_get_path('module', APP_MODULE ) . '/css/default.css' .$query_string . '" />' . "\n";
 }
 
     

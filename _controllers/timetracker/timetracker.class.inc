@@ -131,8 +131,9 @@ function user_autocomplete($string = '')
     while ($user = db_fetch_object($result)) {
       $matches[$user->name] = check_plain($user->name);
     }
-  
+    
   drupal_json($matches);
+  
   exit();
 }
     

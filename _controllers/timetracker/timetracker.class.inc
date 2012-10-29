@@ -604,18 +604,18 @@ function dailyreport($today = FALSE, $date = NULL)
 		
 		$row_data[] = array(
 							'data' => array(
-								array('data' => t(''), 'class' => 'cell-10-'.$record['id'], 'colspan' => 5),
+								array('data' => t(''), 'class' => 'cell-10-'.$record['id'], 'colspan' => 6),
 						  	    array('data' => t('Total Hours: ') . $total_project_hours, 'class' => 'cell-11-'.$record['id'], 'colspan' => 3),
-						  	    array('data' => ''),
+						  	    
 							),
 							'id' => 'total-row-'.$record['id'],
 						);
 		
 		$row_data[] = array(
 							'data' => array(
-								array('data' => t(''), 'class' => 'cell-10-'.$record['id'], 'colspan' => 5),
+								array('data' => t(''), 'class' => 'cell-11-'.$record['id'], 'colspan' => 6),
 								array('data' => t('Total Users: ') .$total_project_users, 'class' => 'cell-10-'.$record['id'], 'colspan' => 3),
-								array('data' => ''),
+								
 							),
 							'id' => 'total-users-row-'.$record['id'],
 						);
@@ -1391,7 +1391,7 @@ function dailyreport($today = FALSE, $date = NULL)
 		
     	
     	/* ajax response */
-    	print $all->id . '}{' . $daily . '}{' . $total_hours . '}{' . $all->event_date . '}{' . $recent . '}{' . t('You record has been updated.') ;
+    	print $all->id . '}{' . $daily . '}{' . $total_hours . '}{' . $all->event_date . '}{' . $recent . '}{' . t('You record has been updated and marked for reference.') ;
     	  
     	}
     	else

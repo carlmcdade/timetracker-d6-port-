@@ -578,6 +578,7 @@ function timetracker_myreports_()
 	
 	if(!empty($terms))
 	{
+		$terms['all'] = t('- all -');
 		ksort($terms);
 	
 	}
@@ -617,7 +618,7 @@ function timetracker_myreports_()
 				'#type' => 'select',
 				'#title' => t('Projects'),
 				'#options' => $terms,
-				'#default_value' => $project,
+				'#default_value' => $terms[0],
 				'#prefix' => '<td>',
 				'#suffix' => '</td></tr>'
 			  );

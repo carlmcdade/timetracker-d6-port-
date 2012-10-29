@@ -463,14 +463,15 @@ function dailyreport($today = FALSE, $date = NULL)
     	
     	
     	/* check for post request */
-    	if(isset($_POST['my_projects_id']) && $_POST['my_projects_id'] != '')
+    	if(isset($_POST['my_projects_id']))
     	{
     		$project = check_plain($_POST['my_projects_id']);   		
     		
 			/*  get the term name */
 			$project_info = taxonomy_get_term($project);
 			
-			if($start && !empty($start))
+			// show entries by date and possibly user
+			if(isset($start) && !empty($start))
 			{
 				$result = db_query("SELECT e.*, u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id WHERE e.event_date BETWEEN '%s' AND '%s' AND e.project_id = %d " . $user_query . "ORDER BY event_date DESC", array($start, $end, $project));
 				
@@ -492,6 +493,37 @@ function dailyreport($today = FALSE, $date = NULL)
 					$total_project_hours += $pj_record->project_hours;
 				}			
 			}
+			
+			// show all entries filter for user when variable present 
+			elseif(isset($_POST['my_projects_id']) && $_POST['my_projects_id'] == 'all')
+			{
+				if(isset($_POST['user_id']) && $_POST['user_id'] != '')
+				{
+					$user_query = "WHERE e.user_id=" . check_plain($_POST['user_id']) . " ";
+				}
+					
+				$result = db_query("SELECT e.*, u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id " . $user_query . "ORDER BY event_date DESC");
+				
+				$pj_users = db_query("SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e " . $user_query);
+				$pj_hours = db_query("SELECT project_hours FROM {timetracker_project_events} e " . $user_query);
+				
+	
+				/* Result is returned as a iterable object that returns a stdClass object on each iteration */
+							
+				while ($pj_record = db_fetch_object($pj_users))
+				{
+					$project_user = user_load($pj_record->user_id);
+					$user_links .= '<li class="user-links">' . l($project_user->name, 'user/'. $pj_record->user_id) . '</li>';
+					$total_project_users += $pj_record->us;
+				}
+	
+				while ($pj_record = db_fetch_object($pj_hours))
+				{
+					$total_project_hours += $pj_record->project_hours;
+				}			
+			}
+			
+			// default to this query
 			else
 			{
 				//

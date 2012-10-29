@@ -296,9 +296,20 @@ div.working-indicator
 }
 
 #message-green{
-    height:30px;
+    min-height:30px;
     background: #CCFFCC;
     border:1px solid #00FF00;
+    margin: 0 0 12px 0;
+}
+
+#message-green .message{
+    
+    margin: 10px 20px;
+}
+
+#message-green .close-green{
+    
+    margin: 0px 10px 0px 0px;
 }
 
 html.js input.throbbing 

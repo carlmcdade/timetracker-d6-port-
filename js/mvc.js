@@ -21,6 +21,9 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 						
 					var section = result.split('}{');
 					
+					// send a message to the user
+					message(section[0]);
+					
 					// show any previously hidden tables
 					//$('#table-').show();
 					$("div:hidden[id*='table-']").show();
@@ -142,7 +145,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 				  
 				}).ajaxStop(function(){
 					
-				  $(this).hide();
+				  $(this).hide();				  
 				  
 				}); 
 	 			
@@ -173,7 +176,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
      				
 				  $(this).show();
 				  
-				}).ajaxStop(function(){
+				}).ajaxStop(function(e){
 					
 				  $(this).hide();
 				  
@@ -235,6 +238,17 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 							success: function(result){
 								
 								section = result.split('}{');
+								
+								// send a message to the user
+								if(section[5] != 'undefined')
+								{
+									message(section[5]);
+								}
+								else
+								{
+									message(result);
+								}
+								
 								$('#recent-' + section[0]).fadeOut("slow", function(){
 
 										$(this).replaceWith(section[4]);									
@@ -285,6 +299,18 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 							success: function(result){
 								
 								section = result.split('}{');
+								
+								// send a message to the user
+								// send a message to the user
+								if(section[5] != 'undefined')
+								{
+									message(section[5]);
+								}
+								else
+								{
+									message(result);
+								}
+								
 								$('.row-' + section[0]).fadeOut("slow", function(){
 										
 
@@ -326,15 +352,21 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 			});
 			
 			////////////////////////////////////////////////////////////////////
+			function message(html)
+			{
+				
+				$("#message-green").show();
+				$("#message-green .message").html(html);
 			
-			$(".close-green").click(function () {
-				$("#message-green").fadeOut("slow");
-			});
-			
-			
-			setTimeout(function(){
-				$("#message-green").fadeOut("slow");
-			},5000)
+				$(".close-green").click(function () {
+					$("#message-green").fadeOut("slow");
+				});
+				
+				setTimeout(function(){
+					$("#message-green").fadeOut("slow");
+				},5000)
+				
+			}
 						
 
 		  // container end

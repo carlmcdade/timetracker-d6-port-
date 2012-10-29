@@ -474,8 +474,8 @@ function dailyreport($today = FALSE, $date = NULL)
 			{
 				$result = db_query("SELECT e.*, u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id WHERE e.event_date BETWEEN '%s' AND '%s' AND e.project_id = %d " . $user_query . "ORDER BY event_date DESC", array($start, $end, $project));
 				
-				$pj_users = db_query("SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.event_date BETWEEN '%s' AND '%s' AND e.project_id = %d", array($start, $end, $project));
-				$pj_hours = db_query("SELECT project_hours FROM {timetracker_project_events} e WHERE event_date BETWEEN '%s' AND '%s' AND e.project_id = %d", array($start, $end, $project));
+				$pj_users = db_query("SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.event_date BETWEEN '%s' AND '%s' " . $user_query . "AND e.project_id = %d", array($start, $end, $project));
+				$pj_hours = db_query("SELECT project_hours FROM {timetracker_project_events} e WHERE event_date BETWEEN '%s' AND '%s' " . $user_query . "AND e.project_id = %d", array($start, $end, $project));
 				
 	
 				/* Result is returned as a iterable object that returns a stdClass object on each iteration */
@@ -497,8 +497,8 @@ function dailyreport($today = FALSE, $date = NULL)
 				//
 				$result = db_query("SELECT e.* , u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id WHERE e.project_id = %d " . $user_query . "ORDER BY event_date DESC", array($project));
 				
-				$pj_users = db_query('SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.project_id = %d', array($project));
-				$pj_hours = db_query('SELECT project_hours FROM {timetracker_project_events} e WHERE e.project_id = %d', array($project));
+				$pj_users = db_query("SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.project_id = %d " . $user_query, array($project));
+				$pj_hours = db_query("SELECT project_hours FROM {timetracker_project_events} e WHERE e.project_id = %d " . $user_query, array($project));
 				
 	
 				/* Result is returned as a iterable object that returns a stdClass object on each iteration */
@@ -533,9 +533,10 @@ function dailyreport($today = FALSE, $date = NULL)
 		$table_header = array(
 				array('data' => 'Entry ID', '' => 'id', 'sort' => 'asc'),
 				array('data' => 'Task', '' => 'project_user_task'),
+				array('data' => 'Project', '' => 'project_name'),
 				array('data' => 'User', '' => 'user_id'),
-				array('data' => 'Hours', '' => 'project_hours'),
 				array('data' => 'Date', '' => 'event_date'),
+				array('data' => 'Hours', '' => 'project_hours'),				
 				array('data' => 'Operations', '' => '', 'colspan' => 3),			
 				);
 		
@@ -567,12 +568,13 @@ function dailyreport($today = FALSE, $date = NULL)
 						  'data' => array(
 						  	  array('data' => $record['id'], 'class' => 'cell-1-'.$record['id']), 
 						  	  array('data' => $record['project_user_task'], 'class' => 'cell-2-'.$record['id']), 
-						  	  array('data' => $record['user_name'], 'class' => 'cell-3-'.$record['id']), 
-						  	  array('data' => $record['project_hours'], 'class' => 'cell-4-'.$record['id']), 
-						  	  array('data' => $record['event_date'], 'class' => 'cell-5-'.$record['id']),
-						  	  array('data' => '<input type="hidden" name="list-projects_id" id="list-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-6-'.$record['id']),
-						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record['id'] . '/' . $record['event_date'], array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record['id']))), 'class' => 'cell-7-'.$record['id']),
-						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record['id'], array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record['id']))), 'class' => 'cell-8-'.$record['id']) 
+						  	  array('data' => $record['project_name'], 'class' => 'cell-3-'.$record['id']), 		  	  
+						  	  array('data' => $record['user_name'], 'class' => 'cell-4-'.$record['id']), 		  	  
+						  	  array('data' => $record['event_date'], 'class' => 'cell-6-'.$record['id']),
+						  	  array('data' => $record['project_hours'], 'class' => 'cell-5-'.$record['id']), 
+						  	  array('data' => '<input type="hidden" name="list-projects_id" id="list-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-7-'.$record['id']),
+						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record['id'] . '/' . $record['event_date'], array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record['id']))), 'class' => 'cell-8-'.$record['id']),
+						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record['id'], array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record['id']))), 'class' => 'cell-9-'.$record['id']) 
 				  
 						  	  ),
 						  'class' => 'row-'.$record['id'],
@@ -603,17 +605,21 @@ function dailyreport($today = FALSE, $date = NULL)
 		$row_data[] = array(
 							'data' => array(
 								array('data' => t(''), 'class' => 'cell-10-'.$record['id'], 'colspan' => 5),
-								array('data' => t('Total Users: ') .$total_project_users, 'class' => 'cell-10-'.$record['id'], 'colspan' => 3),
-							),
-							'id' => 'total-users-row-'.$record['id'],
-						);
-		$row_data[] = array(
-							'data' => array(
-								array('data' => t(''), 'class' => 'cell-10-'.$record['id'], 'colspan' => 5),
 						  	    array('data' => t('Total Hours: ') . $total_project_hours, 'class' => 'cell-11-'.$record['id'], 'colspan' => 3),
+						  	    array('data' => ''),
 							),
 							'id' => 'total-row-'.$record['id'],
 						);
+		
+		$row_data[] = array(
+							'data' => array(
+								array('data' => t(''), 'class' => 'cell-10-'.$record['id'], 'colspan' => 5),
+								array('data' => t('Total Users: ') .$total_project_users, 'class' => 'cell-10-'.$record['id'], 'colspan' => 3),
+								array('data' => ''),
+							),
+							'id' => 'total-users-row-'.$record['id'],
+						);
+		
 		
 		// determine the search settings and create a filename. default to today if no date set
 		
@@ -1385,12 +1391,12 @@ function dailyreport($today = FALSE, $date = NULL)
 		
     	
     	/* ajax response */
-    	print $all->id . '}{' . $daily . '}{' . $total_hours . '}{' . $all->event_date . '}{' . $recent;
+    	print $all->id . '}{' . $daily . '}{' . $total_hours . '}{' . $all->event_date . '}{' . $recent . '}{' . t('You record has been updated.') ;
     	  
     	}
     	else
     	{
-    		print t('Row not updated - error in ..') . print_r($event_update, 1);
+    		print t('Row not updated - error in information sent to the system. Please contact the administrator.') ;
     	}
     }
     

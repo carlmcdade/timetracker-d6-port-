@@ -129,9 +129,9 @@ function user_autocomplete($string = '')
 	$part = explode(',', $string);
 	$matches = array();
   
-    $result = db_query_range("SELECT name FROM {users} WHERE LOWER(name) LIKE LOWER('%s%%')", $part[2], 0, 10);
+    $result = db_query_range("SELECT uid,name FROM {users} WHERE LOWER(name) LIKE LOWER('%s%%')", $part[2], 0, 10);
     while ($user = db_fetch_object($result)) {
-      $matches[$user->name] = check_plain($user->name);
+      $matches[$user->uid] = check_plain($user->name);
     }
     
   drupal_json($matches);
@@ -455,6 +455,13 @@ function dailyreport($today = FALSE, $date = NULL)
     	$start = $_POST['start_date'];
     	$end = $_POST['end_date'];
     	
+    	
+    	if(isset($_POST['user_id']) && $_POST['user_id'] != '')
+    	{
+    		$user_query = "AND user_id=" . check_plain($_POST['user_id']) . " ";
+    	}
+    	
+    	
     	/* check for post request */
     	if(isset($_POST['my_projects_id']) && $_POST['my_projects_id'] != '')
     	{
@@ -465,7 +472,7 @@ function dailyreport($today = FALSE, $date = NULL)
 			
 			if($start && !empty($start))
 			{
-				$result = db_query("SELECT e.*, u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id WHERE e.event_date BETWEEN '%s' AND '%s' AND e.project_id = %d ORDER BY event_date DESC", array($start, $end, $project));
+				$result = db_query("SELECT e.*, u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id WHERE e.event_date BETWEEN '%s' AND '%s' AND e.project_id = %d " . $user_query . "ORDER BY event_date DESC", array($start, $end, $project));
 				
 				$pj_users = db_query("SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.event_date BETWEEN '%s' AND '%s' AND e.project_id = %d", array($start, $end, $project));
 				$pj_hours = db_query("SELECT project_hours FROM {timetracker_project_events} e WHERE event_date BETWEEN '%s' AND '%s' AND e.project_id = %d", array($start, $end, $project));
@@ -488,7 +495,7 @@ function dailyreport($today = FALSE, $date = NULL)
 			else
 			{
 				//
-				$result = db_query("SELECT e.* , u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id WHERE e.project_id = %d ORDER BY event_date DESC", array($project));
+				$result = db_query("SELECT e.* , u.name AS user_name FROM {timetracker_project_events} e LEFT JOIN {users} u ON u.uid = e.user_id WHERE e.project_id = %d " . $user_query . "ORDER BY event_date DESC", array($project));
 				
 				$pj_users = db_query('SELECT project_hours, user_id, COUNT(DISTINCT user_id) as us FROM {timetracker_project_events} e WHERE e.project_id = %d', array($project));
 				$pj_hours = db_query('SELECT project_hours FROM {timetracker_project_events} e WHERE e.project_id = %d', array($project));
@@ -547,7 +554,7 @@ function dailyreport($today = FALSE, $date = NULL)
 				$terms .= '<option value="0"></option>';
 					foreach ($tree as $key => $term)
 					{
-						if($term->tid === $record->project_id)
+						if($term->tid === $record['project_id'])
 						{
 							$selected = 'selected="selected"';
 						}

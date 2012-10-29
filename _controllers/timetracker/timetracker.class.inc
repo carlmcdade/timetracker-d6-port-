@@ -78,9 +78,10 @@ class timetracker{
 			
 			$output .= '<div id="most-recent-events"><h2>' . t('Most recent entries') . '</h2>' ;
 			$table_header = array(
-				array('data' => 'ID'),
+				array('data' => 'Entry ID'),
 				array('data' => 'Task'),
 				array('data' => 'Project'),
+				array('data' => 'User'),
 				array('data' => 'Date'),
 				array('data' => 'Hours'),
 				array('data' => 'Operations','colspan' => 2),			
@@ -92,8 +93,9 @@ class timetracker{
 					array('data' => '', 'class' => 'cell-3-'.$re_record->id), 
 					array('data' => '', 'class' => 'cell-4-'.$re_record->id),
 					array('data' => '', 'class' => 'cell-5-'.$re_record->id),
-					array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $re_record->id . '/' . $re_record->event_date, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $re_record->id))), 'class' => 'cell-6-'.$re_record->id),
-					array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$re_record->id, array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $re_record->id))), 'class' => 'cell-7-'.$re_record->id) 
+					array('data' => '', 'class' => 'cell-6-'.$re_record->id),
+					array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $re_record->id . '/' . $re_record->event_date, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $re_record->id))), 'class' => 'cell-7-'.$re_record->id),
+					array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$re_record->id, array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $re_record->id))), 'class' => 'cell-8-'.$re_record->id) 
 				),
 				'id' => 'recent-'.$re_record->id,
 						  );
@@ -151,9 +153,10 @@ function dailyreport($today = FALSE, $date = NULL)
     	if($today == TRUE)
     	{
     		$table_header = array(
-				array('data' => 'ID'),
+				array('data' => 'Entry ID'),
 				array('data' => 'Task'),
 				array('data' => 'Project'),
+				array('data' => 'User'),
 				array('data' => 'Date'),
 				array('data' => 'Hours'),
 				array('data' => 'Operations','colspan' => 2),			
@@ -166,19 +169,22 @@ function dailyreport($today = FALSE, $date = NULL)
 			while ($record = db_fetch_object($all))
 			{
 					  
-				  $output = '<tr class="event-added" id="recent-' . $record->id . '">' .
+				$owner = user_load($record->user_id);
+				
+				$output = '<tr class="event-added" id="recent-' . $record->id . '">' .
 					  		'<td class="cell-1-' . $record->id . '">' . $record->id . '</td>' . 
 							'<td class="cell-2-' . $record->id . '">' . $record->project_user_task . '</td>' . 
 							'<td class="cell-3-' . $record->id . '">' . $record->project_name . '</td>' . 
-							'<td class="event-date cell-4-' . $record->id . '"><a href="#'. $record->event_date .'">' . $record->event_date . '</a></td>' .
-							'<td class="cell-5-' . $record->id . '">' . $record->project_hours . '</td>' .
-							'<td class="cell-6-' . $record->id . '">' .
-									l(t('delete'), 'timetracker/timetracker/delete_time/' . $record->id . '/' . $record->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record->id))) . '</td>' .
+							'<td class="cell-4-' . $record->id . '">' . l($owner->name,'user/'.$record->user_id) . '</td>' . 							
+							'<td class="event-date cell-5-' . $record->id . '"><a href="#'. $record->event_date .'">' . $record->event_date . '</a></td>' .
+							'<td class="cell-6-' . $record->id . '">' . $record->project_hours . '</td>' .
 							'<td class="cell-7-' . $record->id . '">' .
+									l(t('delete'), 'timetracker/timetracker/delete_time/' . $record->id . '/' . $record->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record->id))) . '</td>' .
+							'<td class="cell-8-' . $record->id . '">' .
 									l(t('update'), '', array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $record->id))) . '</td>' .					  
 							'</tr>'. "\n" .
 							'<tr id="recent-form-row-'.$record->id .'" style="display:none" class=" temp-form">' . 
-							'<td colspan="7"><div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
+							'<td colspan="8"><div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
 								'<form method="post" id="re-update-entry-'.$record->id.'" action="../timetracker/timetracker/update_mytime">'.
 								'<table><tr>' .
 								'<td><label>'.t('Task').'<input type="textfield" id="re-task-'.$record->id.'" name="task" value="'.$record->project_user_task.'" size="24"></label></td>' .
@@ -186,7 +192,7 @@ function dailyreport($today = FALSE, $date = NULL)
 								'<td>' .
 								'<input type="hidden" name="form-id" id="re-form-id-'.$record->id.'" value="'.$record->id.'"></td>' .
 								'<td><label>'.t('Hours').'<input type="textfield" id="re-hours-'.$record->id.'" name="hours" size="2" value="'.$record->project_hours.'"></label>' .
-								'<td><input type="button" class="recentUpdate" value="update"></td>' .
+								'<td><input type="button" class="recentUpdate form-submit" value="update"></td>' .
 								'<td class="indicator"><div class="working-indicator"></div></td>' .
 								'</tr></table>'.
 								'</form>' .
@@ -204,6 +210,7 @@ function dailyreport($today = FALSE, $date = NULL)
 				array('data' => 'ID'),
 				array('data' => 'Task'),
 				array('data' => 'Project'),
+				array('data' => 'User'),
 				array('data' => 'Entry Date'),
 				array('data' => 'Hours'),
 				array('data' => 'Operations','colspan' => 2),			
@@ -219,6 +226,8 @@ function dailyreport($today = FALSE, $date = NULL)
 		while ($re_record = db_fetch_object($recent))
 		{
 				  
+			$owner = user_load($re_record->user_id);
+			
 			$selected = '';  
 			$terms = '<select id="re-projects-'.$re_record->id.'" name="projects">'; 
 			$terms .= '<option value="0"></option>';
@@ -238,10 +247,11 @@ function dailyreport($today = FALSE, $date = NULL)
 					array('data' => $re_record->id, 'class' => 'cell-1-'.$re_record->id), 
 					array('data' => $re_record->project_user_task, 'class' => 'cell-2-'.$re_record->id), 
 					array('data' => $re_record->project_name, 'class' => 'cell-3-'.$re_record->id), 
-					array('data' => l($re_record->event_date, '',  array('fragment' => $re_record->event_date, 'external' => TRUE)), 'class' => 'cell-4-'.$re_record->id),
-					array('data' => $re_record->project_hours, 'class' => 'cell-5-'.$re_record->id),
-					array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $re_record->id . '/' . $re_record->event_date, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $re_record->id))), 'class' => 'cell-6-'.$re_record->id),
-					array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$re_record->id, array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $re_record->id))), 'class' => 'cell-7-'.$re_record->id) 
+					array('data' => l($owner->name, 'user/' . $re_record->user_id) , 'class' => 'cell-4-'.$re_record->id), 					
+					array('data' => l($re_record->event_date, '',  array('fragment' => $re_record->event_date, 'external' => TRUE)), 'class' => 'cell-5-'.$re_record->id),
+					array('data' => $re_record->project_hours, 'class' => 'cell-6-'.$re_record->id),
+					array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $re_record->id . '/' . $re_record->event_date, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $re_record->id))), 'class' => 'cell-7-'.$re_record->id),
+					array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$re_record->id, array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $re_record->id))), 'class' => 'cell-8-'.$re_record->id) 
 				),
 				'id' => 'recent-'.$re_record->id,
 						  );
@@ -251,16 +261,16 @@ function dailyreport($today = FALSE, $date = NULL)
 								array('data' => '<div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
 									'<form method="post" id="re-update-entry-'.$re_record->id.'" action="../timetracker/timetracker/update_mytime">'.
 									'<table><tr>' .
-									'<td><label>'.t('Task').'<input type="textfield" id="re-task-'.$re_record->id.'" name="task" value="'.$re_record->project_user_task.'" size="12"></label></td>' .
+									'<td><label>'.t('Task').'<input type="textfield" class="form-text" id="re-task-'.$re_record->id.'" name="task" value="'.$re_record->project_user_task.'" size="12"></label></td>' .
 									'<td><label>' . t('Projects') . '' . $terms . '</label></td>' .
 									'<td>' .
 									'<input type="hidden" name="form-id" id="re-form-id-'.$re_record->id.'" value="'.$re_record->id.'"></td>' .
-									'<td><label>'.t('Hours').'<input type="textfield" id="re-hours-'.$re_record->id.'" name="hours" size="2" value="'.$re_record->project_hours.'"></label>' .
-									'<td><input type="button" class="recentUpdate" value="update"></td>' .
+									'<td><label>'.t('Hours').'<input type="textfield" class="form-text" id="re-hours-'.$re_record->id.'" name="hours" size="2" value="'.$re_record->project_hours.'"></label>' .
+									'<td><input type="button" class="recentUpdate form-submit" value="update"></td>' .
 									'<td class="indicator"><div class="working-indicator"></div></td>' .
 									'</tr></table>'.
 									'</form>', 
-									'colspan' => 7)),
+									'colspan' => 8)),
 								'id' => 'recent-form-row-'.$re_record->id,
 								'style' => 'display:none',
 						);
@@ -275,7 +285,8 @@ function dailyreport($today = FALSE, $date = NULL)
 				array('data' => 'ID'),
 				array('data' => 'Task'),
 				array('data' => 'Project'),
-				array('data' => ''),
+				array('data' => 'User'),
+				array('data' => 'Date'),
 				array('data' => 'Hours'),
 				array('data' => 'Operations','colspan' => 2),			
 				);
@@ -313,14 +324,29 @@ function dailyreport($today = FALSE, $date = NULL)
 						$terms .= '<option value="'.$term->tid.'" '.$selected.'>' . $term->name . '</option>';
 						$selected = '';
 					}
-				$terms .= '</select>';  
+				$terms .= '</select>'; 
+				
+				$owner = user_load($record['user_id']);
+				
+				if($record['project_name'] == '')
+				{
+					//
+					$project_name = ' - ';
+				}
+				else
+				{
+					//
+					$project_name = $record['project_name'];
+					
+				}
 			
 				$row_data[] = array(
 						  'data' => array(
 						  	  array('data' => $record['id'], 'class' => 'cell-1-'.$record['id']), 
 						  	  array('data' => $record['project_user_task'], 'class' => 'cell-2-'.$record['id']), 
-						  	  array('data' => $record['project_name'], 'class' => 'cell-3-'.$record['id']),
-						  	  array('data' => '<input type="hidden" name="my_projects_id" id="my-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-4-'.$record['id']),
+						  	  array('data' => $project_name, 'class' => 'cell-3-'.$record['id']),
+						  	  array('data' => l($owner->name, 'user/' . $recor['user_id']) . '<input type="hidden" name="my_projects_id" id="my-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-4-'.$record['id']),
+						  	  array('data' => $record['event_date'] . '<input type="hidden" name="my_projects_id" id="my-projects-id" value="' .$record['project_id'] . '">', 'class' => 'cell-4-'.$record['id']),			  	  
 						  	  array('data' => $record['project_hours'], 'class' => 'cell-5-'.$record['id']),
 						  	  array('data' => l(t('delete'), 'timetracker/timetracker/delete_mytime/' . $record['id'] . '/' . $record['event_date'], array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $record['id']))), 'class' => 'cell-6-'.$record['id']),
 						  	  array('data' => l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$record['id'], array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record['id']))), 'class' => 'cell-7-'.$record['id']) 
@@ -334,16 +360,16 @@ function dailyreport($today = FALSE, $date = NULL)
 								array('data' => '<div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
 									'<form method="post" id="update-entry-'.$record['id'].'" action="http://drupal.se/timetracker/timetracker/update_time">'.
 									'<table><tr>' .
-									'<td><label>'.t('Task').'<input type="textfield" id="edit-task-'.$record['id'].'" name="task" value="'.$record['project_user_task'].'" size="24"></label></td>' .
+									'<td><label>'.t('Task').'<input type="textfield" class="form-text" id="edit-task-'.$record['id'].'" name="task" value="'.$record['project_user_task'].'" size="24"></label></td>' .
 									'<td><label>' . t('Projects') . '' . $terms . '</label></td>' .
 									'<td>' .
 									'<input type="hidden" name="form-id" id="form-id-'.$record['id'].'" value="'.$record['id'].'"></td>' .
-									'<td><label>'.t('Hours').'<input type="textfield" id="edit-hours-'.$record['id'].'" name="hours" size="2" value="'.$record['project_hours'].'"></label>' .
-									'<td><input type="button" id="sendUpdate" value="update"></td>' .
+									'<td><label>'.t('Hours').'<input type="textfield" class="form-text" id="edit-hours-'.$record['id'].'" name="hours" size="2" value="'.$record['project_hours'].'"></label>' .
+									'<td><input type="button" class="form-submit" id="sendUpdate" value="update"></td>' .
 									'<td class="indicator"><div class="working-indicator"></div></td>' .
 									'</tr></table>'.
 									'</form>', 
-									'colspan' => 7)),
+									'colspan' => 8)),
 								'id' => 'form-row-'.$record['id'],
 								'style' => 'display:none',
 						);
@@ -355,6 +381,7 @@ function dailyreport($today = FALSE, $date = NULL)
 		$row_data[] = array(
 							'data' => array(
 								l(t('export'),'timetracker/timetracker/myreport_csv/' . $date),
+								'',
 								'',
 								'',
 								'Total Hours:', 
@@ -549,12 +576,12 @@ function dailyreport($today = FALSE, $date = NULL)
 								array('data' => '<div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
 									'<form method="post" id="update-entry-'.$record['id'].'" action="http://drupal.se/timetracker/timetracker/update_time">'.
 									'<table><tr>' .
-									'<td><label>'.t('Task').'<input type="textfield" id="edit-task-'.$record['id'].'" name="task" value="'.$record['project_user_task'].'" size="24"></label></td>' .
+									'<td><label>'.t('Task').'<input type="textfield" class="form-text" id="edit-task-'.$record['id'].'" name="task" value="'.$record['project_user_task'].'" size="24"></label></td>' .
 									'<td><label>' . t('Projects') . '' . $terms . '</label></td>' .
 									'<td>' .
 									'<input type="hidden" name="form-id" id="form-id-'.$record['id'].'" value="'.$record['id'].'"></td>' .
-									'<td><label>'.t('Hours').'<input type="textfield" id="edit-hours-'.$record['id'].'" name="hours" size="2" value="'.$record['project_hours'].'"></label>' .
-									'<td><input type="button" id="sendUpdate" value="update"></td>' .
+									'<td><label>'.t('Hours').'<input type="textfield" class="form-text" id="edit-hours-'.$record['id'].'" name="hours" size="2" value="'.$record['project_hours'].'"></label>' .
+									'<td><input class="form-submit" type="button" id="sendUpdate" value="update"></td>' .
 									'<td class="indicator"><div class="working-indicator"></div></td>' .
 									'</tr></table>'.
 									'</form>', 
@@ -972,12 +999,12 @@ function dailyreport($today = FALSE, $date = NULL)
     	$all = db_fetch_object(db_query("SELECT *
 			FROM {timetracker_project_events} e WHERE e.id = %d LIMIT 1", array($id)));
 			
-			
+			$owner = user_load($all->user_id);
 		
 			$output = '<tr class="event-added" id="row-' . $all->id . '">' .
 					  '<td class="cell-1-' . $all->id . '">' . $all->id . '</td>' . 
 					  '<td class="cell-2-' . $all->id . '">' . $all->project_user_task . '</td>' . 
-					  '<td class="cell-3-' . $all->id . '">' . $all->project_name . '</td>' . 
+					  '<td class="cell-3-' . $all->id . '">' . l($owner->name, 'user/' . $all->user_id) . '</td>' . 
 					  '<td class="event-date cell-4-' . $all->id . '">' . $all->event_date . '</td>' .
 					  '<td class="cell-5-' . $all->id . '">' . $all->project_hours . '</td>' .
 					  '<td class="cell-6-' . $all->id . '">' .
@@ -1183,9 +1210,6 @@ function dailyreport($today = FALSE, $date = NULL)
     	$event_date = $_POST['event_date'];
     	   	
     	
-    	/* add record to user database */
-    	global $user;
-    	
     	/* check for first entry */
     	$first_entry = db_query("SELECT COUNT(user_id) FROM {timetracker_project_events} WHERE user_id = %d",array($user->uid));
     	
@@ -1298,29 +1322,43 @@ function dailyreport($today = FALSE, $date = NULL)
     	$all = db_fetch_object(db_query("SELECT * FROM {timetracker_project_events} e WHERE e.id = %d LIMIT 1", array($id)));
 			
 		
+			$owner = user_load($all->user_id);
 			
+			if($all->project_name == '')
+			{
+				//
+				$project_name = ' - ';
+			}
+			else
+			{
+				//
+				$project_name = $all->project_name;
+					
+			}
 		
 			$daily = '<tr class="event-added row-' . $all->id . '">' .
 					  '<td class="cell-1-' . $all->id . '">' . $all->id . '</td>' . 
 					  '<td class="cell-2-' . $all->id . '">' . $all->project_user_task . '</td>' . 
-					  '<td class="cell-3-' . $all->id . '">' . $all->project_name . '</td>' . 
-					  '<td class="event-date cell-4-' . $all->id . '">' . $all->event_date . '</td>' .
-					  '<td class="cell-5-' . $all->id . '">' . $all->project_hours . '</td>' .
-					  '<td class="cell-6-' . $all->id . '">' .
-					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $all->id))) . '</td>' .
+					  '<td class="cell-3-' . $all->id . '">' . $project_name . '</td>' . 
+					  '<td class="cell-4-' . $all->id . '">' . l($owner->name, 'user/' . $all->user_id) . '</td>' . 
+					  '<td class="event-date cell-5-' . $all->id . '">' . $all->event_date . '</td>' .
+					  '<td class="cell-6-' . $all->id . '">' . $all->project_hours . '</td>' .
 					  '<td class="cell-7-' . $all->id . '">' .
+					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $all->id))) . '</td>' .
+					  '<td class="cell-8-' . $all->id . '">' .
 						l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$all->id, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $all->id))) . '</td>' .
 					  '</tr>';
 					  
 			$recent = '<tr class="event-added recent-'. $all->id .'" id="recent-' . $all->id . '">' .
 					  '<td class="cell-1-' . $all->id . '">' . $all->id . '</td>' . 
 					  '<td class="cell-2-' . $all->id . '">' . $all->project_user_task . '</td>' . 
-					  '<td class="cell-3-' . $all->id . '">' . $all->project_name . '</td>' . 
-					  '<td class="event-date cell-4-' . $all->id . '"><a href="#' . $all->event_date . '">' . $all->event_date . '</a></td>' .
-					  '<td class="cell-5-' . $all->id . '">' . $all->project_hours . '</td>' .
-					  '<td class="cell-6-' . $all->id . '">' .
-					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $all->id))) . '</td>' .
+					  '<td class="cell-3-' . $all->id . '">' . $project_name . '</td>' . 
+					  '<td class="cell-4-' . $all->id . '">' . l($owner->name, 'user/' . $all->user_id) . '</td>' . 
+					  '<td class="event-date cell-5-' . $all->id . '"><a href="#' . $all->event_date . '">' . $all->event_date . '</a></td>' .
+					  '<td class="cell-6-' . $all->id . '">' . $all->project_hours . '</td>' .
 					  '<td class="cell-7-' . $all->id . '">' .
+					  	l(t('delete'), 'timetracker/timetracker/delete_time/' . $all->id . '/' . $all->project_id, array('attributes' => array('class' => 'delete-time', 'id' => 'del-' . $all->id))) . '</td>' .
+					  '<td class="cell-8-' . $all->id . '">' .
 						l(t('update'), APP_MODULE .'/timetracker/update_mytime/'.$all->id, array('attributes' => array('class' => 'update-recent-time', 'id' => 'upd-' . $all->id))) . '</td>' .
 					  '</tr>';
 					  
@@ -1345,7 +1383,7 @@ function dailyreport($today = FALSE, $date = NULL)
     	}
     	else
     	{
-    		print t('error row not updated');
+    		print t('Row not updated - error in ..') . print_r($event_update, 1);
     	}
     }
     

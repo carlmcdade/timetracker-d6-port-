@@ -317,7 +317,7 @@ function dailyreport($today = FALSE, $date = NULL)
 				$terms .= '<option value="0"></option>';
 					foreach ($tree as $key => $term)
 					{
-						if($term->tid === $record->project_id)
+						if($term->tid === $record['project_id'])
 						{
 							$selected = 'selected="selected"';
 						}

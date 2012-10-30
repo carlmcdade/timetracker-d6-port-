@@ -102,13 +102,18 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 									$(this).remove();							
 							});
 							
-							$("#form-row-" + row[1]).remove();	
+							$("tr:visible[id*='form-row-" + row[1]).remove();
 							
-							$("#recent-" + row[1]).fadeOut('slow', function(){
+							
+							$("tr:visible[id*='recent-']" + row[1]).fadeOut('slow', function(){
 									$(this).remove();							
 							});
 							
-							$("#recent-form-row-" + row[1]).remove();
+							$(".recent-" + row[1]).fadeOut('slow', function(){
+									$(this).remove();							
+							});
+							
+							$("tr:visible[id*='recent-form-row-" + row[1]).remove();
 														
 							$('#total-row-' + section[0] + ' #total-user-hours').text(section[1]);
 							

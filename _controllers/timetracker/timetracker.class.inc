@@ -330,8 +330,12 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
 				array('data' => 'Operations','colspan' => 2),			
 				);
 		
-		/*  limit to five days */
-    	$all = db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND event_date <= '" . date("Y-m-d H:i:s") ."' ORDER BY event_date DESC, id DESC", array($user->uid));
+		/*  limit to 10 days */
+		$date = date("Y-m-d");
+		$newdate = strtotime ( '-10 day' , strtotime ( $date ) ) ;
+		$enddate = date ("Y-m-d H:i:s", $newdate);
+		
+    	$all = db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND event_date <= '" . date("Y-m-d H:i:s") ."' AND event_date >= '" . $enddate . "' ORDER BY event_date DESC, id DESC", array($user->uid));
 				
 		while ($record = db_fetch_array($all))
 		{

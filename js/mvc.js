@@ -46,7 +46,10 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 						}
 					}
 					
-					// daily table				
+					// Add table if no previous records are found for the date
+					$("div#most-recent-events").after(section[3]);
+					
+					// daily table updates				
 					$('div#table-' + section[0] + ' table > thead').append(section[1]);
 					
 					$('#total-row-' +  section[0] + ' #total-user-hours').text(section[2]);

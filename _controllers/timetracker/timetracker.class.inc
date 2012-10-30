@@ -108,7 +108,6 @@ class timetracker{
 		{
 			/* this is linked to the menu system so no title is necessary */
 			$variables['title'] = t( "Things you've done so far");
-
 			
 			/* list the user projects table */
 			$output .=  '<div id="output"></div>';
@@ -134,14 +133,15 @@ function user_autocomplete($string = '')
       $matches[$user->uid] = check_plain($user->name);
     }
     
-  drupal_json($matches);
-  
-  exit();
+    drupal_json($matches);
+    
+    exit();
 }
     
-function dailyreport($today = FALSE, $date = NULL)
+function dailyreport($today = FALSE, $date = NULL, $previous = array())
 {
     	global $user;
+    	
     	
     	$total_hours = 0;
     	/* create select list of projects */
@@ -150,17 +150,9 @@ function dailyreport($today = FALSE, $date = NULL)
 		$tree = taxonomy_get_tree($voc,0,NULL,true);
 			   	
     	
-    	if($today == TRUE)
+    	if($today == 'row')
     	{
-    		$table_header = array(
-				array('data' => 'Entry ID'),
-				array('data' => 'Task'),
-				array('data' => 'Project'),
-				array('data' => 'User'),
-				array('data' => 'Date'),
-				array('data' => 'Hours'),
-				array('data' => 'Operations','colspan' => 2),			
-				);
+    		
     		
     		/* limit to five days */
     		$all = db_query("SELECT *
@@ -196,12 +188,60 @@ function dailyreport($today = FALSE, $date = NULL)
 								'<td class="indicator"><div class="working-indicator"></div></td>' .
 								'</tr></table>'.
 								'</form>' .
-							 '</td></tr>';	  
+							 '</td></tr>';
+							 
+					
 			}
-						 
+							 
 		  	return $output;
 			
     	}
+    	elseif($today == 'new')  	
+    	{
+    		
+			$table_header = array(
+				array('data' => 'Entry ID'),
+				array('data' => 'Task'),
+				array('data' => 'Project'),
+				array('data' => 'User'),
+				array('data' => 'Date'),
+				array('data' => 'Hours'),
+				array('data' => 'Operations','colspan' => 2),			
+				);
+			
+			$row_data[] = array(
+						  'data' => array(
+						  	  array('data' => '', 'class' => 'cell-1-'), 
+						  	  array('data' => '', 'class' => 'cell-2-'), 
+						  	  array('data' => '', 'class' => 'cell-3-'),
+						  	  array('data' => '', 'class' => 'cell-4-'),
+						  	  array('data' => '', 'class' => 'cell-4-'),			  	  
+						  	  array('data' => '', 'class' => 'cell-5-'),
+						  	  array('data' => '', 'class' => 'cell-6-'),
+						  	  array('data' => '', 'class' => 'cell-7-') 
+				  
+						  	  ),
+						  'class' => 'row-'.$record['id'],
+						  'style' => 'display:none',
+						  );
+			
+			$row_data[] = array(
+							'data' => array(
+								l(t('export'),'timetracker/timetracker/myreport_csv/' . $date),
+								'',
+								'',
+								'',
+								'Total Hours:', 
+								array('data' => $total_hours , 'colspan' => 3, 'id' => 'total-user-hours')),
+							'id' => 'total-row-'.$date,
+						);	
+			
+			$output = '<div class="table-label"><a name="' . $date . '" href=""><span class="date">' . $date . '</span></a><span class="hours"></span></div>';
+			
+			$output .=  '<div id="table-'.$date.'">' . theme('table', $table_header,$row_data) . '</div>';
+				
+			return $output;
+		}	
     	else
     	{
     	
@@ -278,8 +318,7 @@ function dailyreport($today = FALSE, $date = NULL)
 				  
 		}	
 		
-		$output[] = '<div id="most-recent-events"><h2>' . t('Most recent entries') . '</h2>' . theme('table', $recent_header,$event_data) . '</div>';
-		
+		$output[] = '<div id="most-recent-events"><h2>' . t('Most recent entries') . '</h2>' . theme('table', $recent_header,$event_data) . '</div>';		
 		
 		$table_header = array(
 				array('data' => 'ID'),
@@ -512,7 +551,7 @@ function dailyreport($today = FALSE, $date = NULL)
 							
 				while ($pj_record = db_fetch_object($pj_users))
 				{
-					$project_user = user_load($pj_record->user_id);
+					//$project_user = user_load($pj_record->user_id);
 					$user_links .= '<li class="user-links">' . l($project_user->name, 'user/'. $pj_record->user_id) . '</li>';
 					$total_project_users += $pj_record->us;
 				}
@@ -1257,7 +1296,21 @@ function dailyreport($today = FALSE, $date = NULL)
     	
     	/* check for first entry */
     	$first_entry = db_query("SELECT COUNT(user_id) FROM {timetracker_project_events} WHERE user_id = %d",array($user->uid));
+    	$previous_dates = db_query("SELECT DISTINCT(event_date) FROM {timetracker_project_events} e WHERE e.user_id = %d", array($user->uid));	
+		
+    	while($e_date = db_fetch_array($previous_dates))
+    	{
+    		//
+    		$previous[] = $e_date['event_date'];
+    		
+    	}
     	
+    	if(!in_array($event_date, $previous))
+		{
+			//
+			$new_table = self::dailyreport('new', $event_date);
+		}
+    		
     	$event = db_query("INSERT INTO {timetracker_project_events} 
 				(user_id,project_id,project_name,project_user_task,event_date,project_hours,created,changed) 
 				VALUES(" . 
@@ -1288,14 +1341,13 @@ function dailyreport($today = FALSE, $date = NULL)
 		
 		
     	$all = db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = '%s'", array($user->uid,$event_date));
-				
 		
 		while($record = db_fetch_object($all))
 		{
 			$total_hours += $record->project_hours;
 		}
 		
-		print $event_date.'}{'. self::dailyreport($mode, $event_date) .'}{' . $total_hours ;
+		print $event_date.'}{'. self::dailyreport($mode, $event_date) .'}{' . $total_hours . '}{' . $new_table ;
     	  	
     }
     

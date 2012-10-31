@@ -52,6 +52,24 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 					// daily table updates				
 					$('div#table-' + section[0] + ' table > thead').append(section[1]);
 					
+					
+					
+					// using the same html as for the recent list so the id has be changed here
+					// to make the show() work
+					
+					$('div#table-' + section[0] + ' table > thead > #recent-form-row-' + section[4]).attr("id","form-row-" + section[4]);				
+			
+					$('div#table-' + section[0] + ' table > thead > #recent-' + section[4]).attr("id","row-" + section[4]);
+									
+					$('div#table-' + section[0] + ' table > thead > #row-'  + section[4] + ' > td > a').unbind("click").removeClass().addClass('update-time').live('click', function() { 
+							
+							$("div#table-" + section[0] + " table > thead > #form-row-" + section[4]).addClass('temp-form').fadeIn("slow", function () {
+									$(this).css('display', 'visible');		
+							});
+					});
+							
+					
+					
 					$('#total-row-' +  section[0] + ' #total-user-hours').text(section[2]);
 					
 					$('#total-row-' + section[0]).removeClass().addClass('event-added');							
@@ -131,10 +149,10 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 			////////////////////////////////////////////////////////////////////
 			
 			$("a.update-time").live("click", function(event) {
-					
+							
 				event.preventDefault();	
 				
-	 			var row = $(this).attr("id").split('-');			
+	 			var row = $(this).attr("id").split('-');
 	 			
 	 			$("tr:visible[id*='form-row-']").hide();
 	 			
@@ -145,6 +163,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 	 			
 	 			$("#form-row-" + row[1]).addClass('temp-form').fadeIn("slow", function () {
 							$(this).css('display', '');
+							
 					});
 	 			
 	 			$("form#update-entry-" + row[1] + " table tbody tr td.indicator div.working-indicator").ajaxStart(function(){
@@ -176,7 +195,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 	 			// reset the select list to the selected value if not changed by submit
 	 			$("#re-update-entry-" + row[1]).each (function() { this.reset(); });
 	 			
-	 			$("#recent-form-row-" + row[1]).addClass('temp-form').fadeIn("slow", function () {
+	 			$("#recent-" + row[1]).next("#recent-form-row-" + row[1]).addClass('temp-form').fadeIn("slow", function () {
 							$(this).css('display','');
 					});
 	 			

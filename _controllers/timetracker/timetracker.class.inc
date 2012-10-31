@@ -163,6 +163,20 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
 					  
 				$owner = user_load($record->user_id);
 				
+				$selected = '';  
+				$terms = '<select id="projects-'.$record->id.'" name="projects">'; 
+				$terms .= '<option value="0"></option>';
+					foreach ($tree as $key => $term)
+					{
+						if($term->tid === $record->project_id)
+						{
+							$selected = 'selected="selected"';
+						}
+						$terms .= '<option value="'.$term->tid.'" '.$selected.'>' . $term->name . '</option>';
+						$selected = '';
+					}
+				$terms .= '</select>'; 
+				
 				$output = '<tr class="event-added recent-'.$record->id.'" id="recent-' . $record->id . '">' .
 					  		'<td class="cell-1-' . $record->id . '">' . $record->id . '</td>' . 
 							'<td class="cell-2-' . $record->id . '">' . $record->project_user_task . '</td>' . 
@@ -179,11 +193,11 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
 							'<td colspan="8"><div style="text-align:right;cursor:pointer;" class="form-close">' . t('close') . ' x</div>' .
 								'<form method="post" id="re-update-entry-'.$record->id.'" action="../timetracker/timetracker/update_mytime">'.
 								'<table><tr>' .
-								'<td><label>'.t('Task').'<input type="textfield" id="re-task-'.$record->id.'" name="task" value="'.$record->project_user_task.'" size="24"></label></td>' .
-								'<td><label>' . t('Projects') . '' . '</label></td>' .
+								'<td><label>'.t('Task').'<input type="textfield" class="form-text" id="re-task-'.$record->id.'" name="task" value="'.$record->project_user_task.'" size="24"></label></td>' .
+								'<td><label>' . t('Projects') . $terms .'</label></td>' .
 								'<td>' .
 								'<input type="hidden" name="form-id" id="re-form-id-'.$record->id.'" value="'.$record->id.'"></td>' .
-								'<td><label>'.t('Hours').'<input type="textfield" id="re-hours-'.$record->id.'" name="hours" size="2" value="'.$record->project_hours.'"></label>' .
+								'<td><label>'.t('Hours').'<input type="textfield" class="form-text" id="re-hours-'.$record->id.'" name="hours" size="2" value="'.$record->project_hours.'"></label>' .
 								'<td><input type="button" class="recentUpdate form-submit" value="update"></td>' .
 								'<td class="indicator"><div class="working-indicator"></div></td>' .
 								'</tr></table>'.
@@ -1329,8 +1343,7 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
 				"'" . date("Y-m-d H:i:s") . "')");
     	   	
 				
-		/* inform the user */
-		//drupal_set_message(t( 'Confirming ') . $project_hours . t(' task hours added to ') . $project_info->name . t(' for ') . $event_date );
+		$newid = db_last_insert_id('timetracker_project_events', 'id');
 		
 		/* show the updated report */
 		
@@ -1352,7 +1365,7 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
 			$total_hours += $record->project_hours;
 		}
 		
-		print $event_date.'}{'. self::dailyreport($mode, $event_date) .'}{' . $total_hours . '}{' . $new_table ;
+		print $event_date.'}{'. self::dailyreport($mode, $event_date) .'}{' . $total_hours . '}{' . $new_table . '}{' . $newid;
     	  	
     }
     

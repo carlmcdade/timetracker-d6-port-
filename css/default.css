@@ -304,12 +304,13 @@ div.working-indicator
 
 #message-green .message{
     
-    margin: 10px 20px;
+    margin: 0 10px 20px 10px;
+    text-align: center;
 }
 
 #message-green .close-green{
     
-    margin: 0px 10px 0px 0px;
+    margin: 10px 10px 0px 0px;
 }
 
 html.js input.throbbing 

@@ -22,7 +22,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 					var section = result.split('}{');
 					
 					// send a message to the user
-					message(section[0]);
+					message(section[5], '#ccffcc');
 					
 					// show any previously hidden tables
 					//$('#table-').show();
@@ -116,28 +116,32 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 							
 							section = result.split('}{');
 							
-							$(".row-" + row[1]).fadeOut('slow', function(){
-									$(this).remove();							
-							});
+							if(section[3] == true)
+							{
 							
-							$("tr:visible[id*='form-row-" + row[1]).remove();
-							
-							
-							$("tr:visible[id*='recent-']" + row[1]).fadeOut('slow', function(){
-									$(this).remove();							
-							});
-							
-							$(".recent-" + row[1]).fadeOut('slow', function(){
-									$(this).remove();							
-							});
-							
-							$("tr:visible[id*='recent-form-row-" + row[1]).remove();
-														
-							$('#total-row-' + section[0] + ' #total-user-hours').text(section[1]);
-							
-							$('#total-row-' + section[0]).removeClass().addClass('event-removed');							
+								$(".row-" + row[1]).fadeOut('slow', function(){
+										$(this).remove();							
+								});
+								
+								$("tr:visible[id*='form-row-" + row[1]).remove();
+								
+								
+								$("tr:visible[id*='recent-']" + row[1]).fadeOut('slow', function(){
+										$(this).remove();							
+								});
+								
+								$(".recent-" + row[1]).fadeOut('slow', function(){
+										$(this).remove();							
+								});
+								
+								$("tr:visible[id*='recent-form-row-" + row[1]).remove();
+															
+								$('#total-row-' + section[0] + ' #total-user-hours').text(section[1]);
+								
+								$('#total-row-' + section[0]).removeClass().addClass('event-removed');
+							}							
 
-						
+						    message(section[2], '#FFCCCC');
 							
 						}
 				});
@@ -379,10 +383,10 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 			});
 			
 			////////////////////////////////////////////////////////////////////
-			function message(html)
+			function message(html, color)
 			{
 				
-				$("#message-green").show();
+				$("#message-green").css({"background-color": color, "border-color" : color}).show();
 				$("#message-green .message").html(html);
 			
 				$(".close-green").click(function () {
@@ -391,7 +395,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 				
 				setTimeout(function(){
 					$("#message-green").fadeOut("slow");
-				},5000)
+				},8000)
 				
 			}
 						

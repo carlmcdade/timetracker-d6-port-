@@ -310,6 +310,20 @@ function timetracker_init()
 */
 
 
+/**
+
+// For current user
+  if (user_access('user timetracker')) {
+    // Doing something special!
+  }
+
+  // For a specific user
+  if (user_access('manage timetracker', $user)) {
+    // Doing something special!
+  }
+  
+*/
+
 function timetracker_perm() {
   return array(
     'use timetracker',

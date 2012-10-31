@@ -1365,7 +1365,14 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
 			$total_hours += $record->project_hours;
 		}
 		
-		print $event_date.'}{'. self::dailyreport($mode, $event_date) .'}{' . $total_hours . '}{' . $new_table . '}{' . $newid;
+		$message = t('A new record ('. $newid.') for '.$event_date.' has been added.');
+		
+		print $event_date.'}{'. 
+		self::dailyreport($mode, $event_date) .'}{' . 
+		$total_hours . '}{' . 
+		$new_table . '}{' . 
+		$newid . '}{' .
+		$message;
     	  	
     }
     
@@ -1375,27 +1382,38 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
     {
     	global $user;
     	
+    	$perms = timetracker_perm();   	
+    	
     	/* remove record from user database */
     	$id = check_plain(arg(3));
     	
-    	$date = db_fetch_array(db_query("SELECT event_date FROM {timetracker_project_events} e WHERE id = %d", array($id)));
+    	$info = db_fetch_array(db_query("SELECT user_id,event_date FROM {timetracker_project_events} e WHERE id = %d", array($id)));
 		
-    	
-    	$deleted = db_query("DELETE FROM {timetracker_project_events} WHERE id=%d", array($id));
+    	if (user_access($perms[2]) OR $info['user_id'] == $user->uid)
+    	{
+			// Doing something special!
+			$deleted = db_query("DELETE FROM {timetracker_project_events} WHERE id=%d", array($id));
+			
+			$total_hours = 0;   	
+    	   	
+			$all = db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = '%s'", array($user->uid, $info['event_date']));
+					
+			
+			while($record = db_fetch_object($all))
+			{
+				$total_hours += $record->project_hours;
+			}
+			
+			print $info['event_date'] . '}{' . $total_hours . '}{' . t('The record has been deleted and the hours adjusted.') . '}{1';
 		  
-		$total_hours = 0;
-    	
-    	
-    	
-    	$all = db_query("SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.event_date = '%s'", array($user->uid, $date['event_date']));
-				
-		
-		while($record = db_fetch_object($all))
+		}
+		else
 		{
-			$total_hours += $record->project_hours;
+			print $info['event_date'] . '}{' . $total_hours . '}{' . t('Sorry but you do not have permission for that operation. Contact the administrator.') . '}{';
 		}
     	
-    	print $date['event_date'] . '}{' . $total_hours;
+    	
+		
     }
     
     /*  the response to the mini-form for updating an entry */

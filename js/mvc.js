@@ -3,7 +3,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
      	// container start
      	
      		////////////////////////////////////////////////////////////////////
-     		  		
+     		 
      		
      		////////////////////////////////////////////////////////////////////
      	   
@@ -19,7 +19,28 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 						((''+month).length<2 ? '0' : '') + month + '-' +
 						((''+day).length<2 ? '0' : '') + day;
 						
+					
+						
 					var section = result.split('}{');
+					
+					var list = [];
+						
+					$('[id^="table-"]').each(function(index, table){
+							
+							datepart = $(this).attr('id').split('-');
+							datemarker = datepart[1] + '-' + datepart[2] + '-' + datepart[3];
+							placemarker = section[0];
+							
+							list.push($(this).attr('id'));
+							
+							if ( ( new Date(datemarker).getTime() < new Date(placemarker).getTime() ) )
+							{
+								//alert('(' + placemarker + ') is above (' + datemarker + ')');
+								
+								return false; 
+							} 
+					}); 
+					 
 					
 					// send a message to the user
 					message(section[5], '#ccffcc');
@@ -47,7 +68,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 					}
 					
 					// Add table if no previous records are found for the date
-					$("div#most-recent-events").after(section[3]);
+					$("div#table-" + datemarker).before(section[3]);
 					
 					// daily table updates				
 					$('div#table-' + section[0] + ' table > thead').append(section[1]);

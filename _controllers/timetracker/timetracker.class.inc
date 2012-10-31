@@ -250,9 +250,9 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
 							'id' => 'total-row-'.$date,
 						);	
 			
-			$output = '<div class="table-label"><a name="' . $date . '" href=""><span class="date">' . $date . '</span></a><span class="hours"></span></div>';
+			$output = '<div id="table-'.$date.'"><div class="table-label"><a name="' . $date . '" href=""><span class="date">' . $date . '</span></a><span class="hours"></span></div>';
 			
-			$output .=  '<div id="table-'.$date.'">' . theme('table', $table_header,$row_data) . '</div>';
+			$output .=  '' . theme('table', $table_header,$row_data) . '</div>';
 				
 			return $output;
 		}	

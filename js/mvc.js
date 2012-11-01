@@ -67,8 +67,14 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 						}
 					}
 					
+					
+					
 					// Add table if no previous records are found for the date
-					$("div#table-" + datemarker).before(section[3]);
+					if ( ( new Date(datemarker).getTime() < new Date(placemarker).getTime() ) )
+					{
+						$("div#table-" + datemarker).before(section[3]);
+					}
+					
 					
 					// daily table updates				
 					$('div#table-' + section[0] + ' table > thead').append(section[1]);

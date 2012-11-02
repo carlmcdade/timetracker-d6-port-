@@ -3,8 +3,18 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
      	// container start
      	
      		////////////////////////////////////////////////////////////////////
-     		 
+     		// Validation   		
+     		////////////////////////////////////////////////////////////////////
      		
+     		$("#edit-hours-used").change( function () {
+				var textBoxVal=$(this).val();
+				if(textBoxVal > 24)
+					alert("Error you cannot work more than 24 hours in one day!"); 
+				return false;
+			});
+     		
+     		////////////////////////////////////////////////////////////////////
+     		// form process  		
      		////////////////////////////////////////////////////////////////////
      	   
             $('#timetracker-mytime-').ajaxForm({

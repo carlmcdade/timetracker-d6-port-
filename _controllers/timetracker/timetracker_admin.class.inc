@@ -244,8 +244,10 @@ class timetracker_admin{
 								$hours_total,
 								$record->created,
 								$record->status_name,
-								l(t('edit'), 'admin/'. APP_MODULE .'/project_edit/'.$record->tid, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->tid))) 
-							),
+								l(t('edit'), 'admin/'. APP_MODULE .'/project_edit/'.$record->tid, array('attributes' => array('class' => 'update-project', 'id' => 'upd-' . $record->tid))) . ' | ' .
+								l(t('report'), 'admin/'. APP_MODULE .'/project_view/'.$record->tid, array('attributes' => array('class' => 'view-project', 'id' => 'view-' . $record->tid))) 
+								
+								),
 						'id' => 'row-'.$record->tid,
 						);
 			
@@ -335,18 +337,18 @@ class timetracker_admin{
     	
     	
     	// update the taxonomy table
-    	$term = new stdClass();
-    	$term->tid = check_plain($_POST['project_id']);
-		$term->name = check_plain($_POST['project_name']);
-		$term->description = check_plain($_POST['project_desc']);
-		$term->vid = $voc->vid;
+    	$term = array();
+    	$term['tid'] = check_plain($_POST['project_id']);
+		$term['name'] = check_plain($_POST['project_name']);
+		$term['description'] = check_plain($_POST['project_desc']);
+		$term['vid'] = $voc;
 
 		
 		/* save to the Drupal taxonomy system which creates a term/project */
-		taxonomy_term_save($term);
+		$new_term = taxonomy_save_term($term);
 
 						
-		$project_id = db_fetch_object(db_query("SELECT * FROM {timetracker_projects} AS tp WHERE project_id=%d", array($term->tid)));						
+		$project_id = db_fetch_object(db_query("SELECT * FROM {timetracker_projects} AS tp WHERE project_id=%d", array($term['tid'])));						
 		
     	// update the timetracker project table
     	if(is_object($project_id))
@@ -361,29 +363,31 @@ class timetracker_admin{
 				"status =" . check_plain($_POST['project_status']) . ")" .
 				" WHERE project_id= %d", array($term->tid));
 					
-			drupal_set_message( t('project updated'));
+			drupal_set_message(t('project updated'));
+			drupal_goto('admin/timetracker/project_edit/'. $term->tid);
 					
 		}
 		else
 		{		 
 					
 			$project_info = db_query("INSERT INTO {timetracker_projects} 
-				(project_id,project_group_id, project_name,project_desc,project_external_key,created,changed,status, vid 
-				VALUES(" . $term->name .",". 
-				$term->description . "," . 
-				check_plain($_POST['project_group']) . "," .  
-				check_plain($_POST['project_external_key']) . "," . 
-				date("Y-m-d H:i:s") . "," .
-				date("Y-m-d H:i:s") . "," .
-				check_plain($_POST['project_status']) . "," .
-				$voc );
+				(project_name,project_desc,project_group_id,project_external_key,created,changed,status, vid) 
+				VALUES('" . $term['name'] ."',". 
+				"'" . $term['description'] . "'," . 
+				"'" . check_plain($_POST['project_group']) . "'," .  
+				"'" . check_plain($_POST['project_external_key']) . "'," . 
+				"'" . date("Y-m-d H:i:s") . "'," .
+				"'" . date("Y-m-d H:i:s") . "'," .
+				"'" . check_plain($_POST['project_status']) . "'," .
+				$voc . ")");
 					
 			drupal_set_message( t('project and taxonomy tables syncronised.'));
+			drupal_goto('admin/timetracker/project_edit/'. $new_term['tid']);
 				
 		}		
 		
 		 
-		drupal_goto('admin/timetracker/project_edit/'. $term->tid);
+		
 		
     }
     
@@ -462,7 +466,7 @@ class timetracker_admin{
 							$record->project_group_name, 
 							$record->project_group_prefix,
 							$record->project_group_description,
-							l(t('edit'), 'admin/'. APP_MODULE .'/group_edit/'.$record->tid, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->tid))) 
+							l(t('edit'), 'admin/'. APP_MODULE .'/group_edit/'.$record->project_group_id, array('attributes' => array('class' => 'update-group', 'id' => 'upd-' . $record->project_group_id))) 
 							),
 						'id' => 'row-'.$record->project_group_id,
 					);
@@ -524,6 +528,52 @@ class timetracker_admin{
 		
 		drupal_goto('admin/timetracker/groups');
 		
+    }
+    
+    function group_update()
+    {
+    	global $user;
+    	
+    	// 
+    	$group_id = $_POST['group_id'];
+    	$group_name = $_POST['group_name'];
+    	$group_prefix = $_POST['group_prefix'];
+    	$group_description = $_POST['group_description'];
+    	
+		$group_set = db_query("UPDATE {timetracker_project_groups} 
+				 SET " .
+				"project_group_name = '" . $group_name ."',". 
+				"project_group_prefix = '" . $group_prefix . "'," . 
+				"project_group_description = '" .  $group_description . "' WHERE project_group_id=%d", array($group_id));
+		
+		if($group_set != FALSE)
+		{					
+			drupal_set_message( t('The group.') . $group_name . t('has been updated.'));										 
+		}
+		else
+		{
+			drupal_set_message(t('There was an error in the creation of the record please contact support.'));
+		}
+		
+		drupal_goto('admin/timetracker/groups');
+		
+    }
+    
+    function group_edit()
+    {
+    	//
+    	global $user;
+    	
+		$output .= drupal_get_form('timetracker_groups_add_', 'admin/timetracker/group_save');
+		    	
+    	//group prefix
+    	
+    	//group description
+    	
+    	// group update
+    	
+    	return $output;
+    	
     }
     
     

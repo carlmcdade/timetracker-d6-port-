@@ -368,6 +368,16 @@ function timetracker_menu()
 		'access arguments' => array('administer timetracker'),
 	  ); 
 	  
+	  
+	 // let the user set their parameters in their profile 
+	 // Need at least one child item before your section will appear.
+	  $items['user/'. APP_MODULE .'/settings'] = array(
+		'title' => 'Timetracker',
+		'description' => 'Settings to be used in project listings',
+		'page callback' => '_controller',
+		'access arguments' => array('administer timetracker'),
+	  ); 
+	  
     return $items;
 
 } 
@@ -1003,27 +1013,18 @@ function timetracker_groups_add_()
 	
 	// if we are on the edit page fill the values
 	$gid = check_plain(arg(3));
+	$group = array();
 	
-	$form['add'] = array(
-		'#type' => 'fieldset',
-		'#title' => t('Add a group'),
-		'#collapsible' => TRUE,
-		'#collapsed' => TRUE,
-
-		);
 	
 	if(isset($gid) && is_numeric($gid))
 	{		
 		$op = t('Update group');
-		$group = db_fetch_array(db_query("SELECT * FROM {timetracker_project_groups} WHERE group_id=%d",array($pid)));
+		$group = db_fetch_array(db_query("SELECT * FROM {timetracker_project_groups} WHERE project_group_id=%d",array($gid)));
 		$db_op = 'group_update';
 		
-		$group = (array)$group[0];
 		
-		$form['add']['group_id'] = array(
-			'#type' => 'hidden', 
-			'#value' => $pid,
-		);
+		
+		$collapsed = FALSE;
 		
 	}
 	else
@@ -1031,14 +1032,26 @@ function timetracker_groups_add_()
 		//
 		$op = t('Add a group');
 		$db_op = 'group_save';
+		$collapsed = TRUE;
 	}	
 	
-	$group = array();
+	$form['add'] = array(
+		'#type' => 'fieldset',
+		'#title' => t($op),
+		'#collapsible' => TRUE,
+		'#collapsed' => $collapsed,
+
+		);
+	
+	$form['add']['group_id'] = array(
+			'#type' => 'hidden', 
+			'#value' => $gid,
+		);
 		
     $form['add']['group_name'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Group name'),
-		'#default_value' => isset($group['project_group_name']) ? $group['project_group-name'] : '',
+		'#default_value' => (isset($group['project_group_name']) ? $group['project_group_name'] : ''),
 	);	
 	
 	$form['add']['group_prefix'] = array(

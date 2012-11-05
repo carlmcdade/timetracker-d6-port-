@@ -313,8 +313,8 @@ class timetracker_admin{
     	$term_info = taxonomy_get_term($new);
     	
     	$project_info = db_query("INSERT INTO {timetracker_projects} 
-				VALUES(project_id,project_group_id, project_name,project_desc,project_external_key,created,changed,status, vid 
-				SET(" . $term->name .",". 
+    		(project_id,project_group_id, project_name,project_desc,project_external_key,created,changed,status, vid 
+				VALUES(" . $term->name .",". 
 				$term->description . "," . 
 				check_plain($_POST['project_group']) . "," .  
 				check_plain($_POST['project_external_key']) . "," . 
@@ -368,8 +368,8 @@ class timetracker_admin{
 		{		 
 					
 			$project_info = db_query("INSERT INTO {timetracker_projects} 
-				VALUES(project_id,project_group_id, project_name,project_desc,project_external_key,created,changed,status, vid 
-				SET(" . $term->name .",". 
+				(project_id,project_group_id, project_name,project_desc,project_external_key,created,changed,status, vid 
+				VALUES(" . $term->name .",". 
 				$term->description . "," . 
 				check_plain($_POST['project_group']) . "," .  
 				check_plain($_POST['project_external_key']) . "," . 
@@ -432,6 +432,7 @@ class timetracker_admin{
 				array('data' => 'Name', 'field' => 'project_group_name'),
 				array('data' => 'Prefix Code', 'field' => 'project_group_prefix'),
 				array('data' => 'Description', 'field' => 'project_group_description'),
+				'Operations',
 				
 				);
 		
@@ -444,6 +445,10 @@ class timetracker_admin{
 		
 		//generate a paged query
 		$result = pager_query($query, $limit);
+		
+		print_r($result);
+		
+		
 			
 		// Result is returned as a iterable object that returns a stdClass object on each iteration
 		if($result->num_rows > 0){
@@ -460,7 +465,7 @@ class timetracker_admin{
 							$record->project_group_id,
 							$record->project_group_name, 
 							$record->project_group_prefix,
-							$record->description,
+							$record->project_group_description,
 							l(t('edit'), 'admin/'. APP_MODULE .'/group_edit/'.$record->tid, array('attributes' => array('class' => 'update-time', 'id' => 'upd-' . $record->tid))) 
 							),
 						'id' => 'row-'.$record->project_group_id,
@@ -501,20 +506,26 @@ class timetracker_admin{
     {
     	global $user;
     	
-    	//
-    	$group_name = $_POST['project_group_name'];
-    	$group_prefix = $_POST['project_group_prefix'];
-    	$group_description = $_POST['project_group_description'];
+    	//    	
+    	$group_name = $_POST['group_name'];
+    	$group_prefix = $_POST['group_prefix'];
+    	$group_description = $_POST['group_description'];
     	
-					
-			$project_info = db_query("INSERT INTO {timetracker_project_groups} 
-				VALUES(project_group_name,project_group_prefix,project_group_description)
-				SET(" . $group_name .",". 
-				$group_prefix . "," . 
-				$group_description);
-					
-		drupal_set_message( t('The group.') . $group_name . t('has been created.'));								
-		 
+		$group_set = db_query("INSERT INTO {timetracker_project_groups} 
+			(project_group_name,project_group_prefix,project_group_description)
+				 VALUES('" . $group_name ."','". 
+				$group_prefix . "','" . 
+				$group_description . "')");
+		
+		if($group_set->num_rows > 0)
+		{					
+			drupal_set_message( t('The group.') . $group_name . t('has been created.'));										 
+		}
+		else
+		{
+			drupal_set_message(t('There was an error in the creation of the record please contact support.'));
+		}
+		
 		drupal_goto('admin/timetracker/groups');
 		
     }

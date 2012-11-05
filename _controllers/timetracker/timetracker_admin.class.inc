@@ -444,11 +444,7 @@ class timetracker_admin{
 		$limit = 10;
 		
 		//generate a paged query
-		$result = pager_query($query, $limit);
-		
-		print_r($result);
-		
-		
+		$result = pager_query($query, $limit);	
 			
 		// Result is returned as a iterable object that returns a stdClass object on each iteration
 		if($result->num_rows > 0){

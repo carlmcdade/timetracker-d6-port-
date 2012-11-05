@@ -6,11 +6,14 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
      		// Validation   		
      		////////////////////////////////////////////////////////////////////
      		
-     		$("#edit-hours-used").change( function () {
+     		$("#edit-hours-used").blur( function () {
 				var textBoxVal=$(this).val();
 				if(textBoxVal > 24)
-					alert("Error you cannot work more than 24 hours in one day!"); 
-				return false;
+				{
+					alert("Error you cannot work more than 24 hours in one day!");
+					$(textBoxVal).focus();
+					return false;
+				}
 			});
      		
      		////////////////////////////////////////////////////////////////////

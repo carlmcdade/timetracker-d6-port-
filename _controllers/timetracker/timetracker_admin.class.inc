@@ -497,6 +497,28 @@ class timetracker_admin{
 		
     }
     
+    function group_save()
+    {
+    	global $user;
+    	
+    	//
+    	$group_name = $_POST['project_group_name'];
+    	$group_prefix = $_POST['project_group_prefix'];
+    	$group_description = $_POST['project_group_description'];
+    	
+					
+			$project_info = db_query("INSERT INTO {timetracker_project_groups} 
+				VALUES(project_group_name,project_group_prefix,project_group_description)
+				SET(" . $group_name .",". 
+				$group_prefix . "," . 
+				$group_description);
+					
+		drupal_set_message( t('The group.') . $group_name . t('has been created.'));								
+		 
+		drupal_goto('admin/timetracker/groups');
+		
+    }
+    
     
 }
 

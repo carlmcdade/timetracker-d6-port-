@@ -1038,19 +1038,19 @@ function timetracker_groups_add_()
     $form['add']['group_name'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Group name'),
-		'#default_value' => isset($group['project_name']) ? $group['project_name'] : '',
+		'#default_value' => isset($group['project_group_name']) ? $group['project_group-name'] : '',
 	);	
 	
 	$form['add']['group_prefix'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Group prefix'),
-		'#default_value' => isset($group['project_external_key']) ? $group['project_external_key'] : '',
+		'#default_value' => isset($group['project_group_prefix']) ? $group['project_group_prefix'] : '',
 		'#description' => t('This is the prefix for the project code and must be unique. Example: if your project is named Admin then example: "ADM"')
 	);
 	
-	$form['add']['project_desc'] = array(
+	$form['add']['group_description'] = array(
 		'#type' => 'textfield', 
-		'#default_value' => isset($group['project_desc']) ? $group['project_desc'] : '',
+		'#default_value' => isset($group['project_group_description']) ? $group['project_group_description'] : '',
 		'#title' => t('Description'),
 	);
 				  

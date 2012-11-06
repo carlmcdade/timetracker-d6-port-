@@ -127,7 +127,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
             		$.ajax({
 							type: "POST",
 							dataType: "html",
-							url: "../project_unique_key_autocomplete",
+							url: "./project_unique_key_autocomplete",
 							data:{
 								pkid:$('input#edit-project-external-key').val()
 							},

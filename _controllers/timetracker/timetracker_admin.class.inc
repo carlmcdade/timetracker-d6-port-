@@ -347,17 +347,18 @@ class timetracker_admin{
     	db_query("INSERT INTO {timetracker_projects} 
     		(project_id,project_name,project_desc,project_group_id,project_external_key,created,changed,status, vid) 
 				VALUES(" . 
-				$new .",".
-				$term->name .",". 
-				$term->description . "," . 
-				strtoupper($pr_group) . "," .  
-				strtoupper($pr_key) . "," . 
-				date("Y-m-d H:i:s") . "," .
-				date("Y-m-d H:i:s") . "," .
-				$pr_status . "," .
-				$voc );
+				"'" . $new ."',".
+				"'" . $pr_name ."',". 
+				"'" . $pr_desc . "'," . 
+				"'" . strtoupper($pr_group) . "'," .  
+				"'" . strtoupper($pr_key) . "'," . 
+				"'" . date("Y-m-d H:i:s") . "'," .
+				"'" . date("Y-m-d H:i:s") . "'," .
+				"'" . $pr_status . "'," .
+				"'" . $voc ."')" );
 				
-		drupal_set_message( t('project added to timetracker') ); 
+		drupal_set_message( t('project added to timetracker') );
+		drupal_goto('admin/timetracker/projects');
     }
     
     function project_update()

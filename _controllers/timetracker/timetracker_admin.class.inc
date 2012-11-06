@@ -533,7 +533,9 @@ class timetracker_admin{
 				$group_prefix . "','" . 
 				$group_description . "')");
 		
-		if($group_set->num_rows > 0)
+		$group_set_info = db_affected_rows();
+		
+		if($group_set_info > 0)
 		{					
 			drupal_set_message( t('The group.') . $group_name . t('has been created.'));										 
 		}
@@ -562,7 +564,9 @@ class timetracker_admin{
 				"project_group_prefix = '" . $group_prefix . "'," . 
 				"project_group_description = '" .  $group_description . "' WHERE project_group_id=%d", array($group_id));
 		
-		if($group_set != FALSE)
+		$group_set_info = db_affected_rows();
+		
+		if($group_set_info > 0)
 		{					
 			drupal_set_message( t('The group.') . $group_name . t('has been updated.'));										 
 		}

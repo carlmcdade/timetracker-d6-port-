@@ -123,7 +123,7 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
             ////////////////////////////////////////////////////////////////////
             // check for unique project key
             
-            $("#edit-project-external-key").keypress(function(){
+            $("#edit-project-external-key").keyup(function(){
             		$.ajax({
 							type: "POST",
 							dataType: "html",
@@ -133,20 +133,28 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 							},
 							cache: false,
 							success: function(result){
+								
+								$(".pk-form-message").hide();
 							
 								if((result == 1) || ($("#edit-project-external-key").val() == ''))
 								{
-									$(".pk-form-message").text('Not a unique key.').css({"background-color":"#ffcccc","border":"1px solid #ff9999","padding":"4px","width":"130px","margin-left":"6px"});
+									$(".pk-form-message").
+									text('Not a unique key.').
+									css({"background-color":"#ffcccc","border":"1px solid #ff9999","padding":"4px","width":"130px","margin-left":"6px"}).
+									show();
 									
 									$("#edit-project-external-key").val(($("#edit-project-external-key").val()).toUpperCase());
 									
 									$("#edit-submit").attr("disabled", true);
 									
-									return false;
+						
 								}
 								else
 								{
-									$(".pk-form-message").text('This key is OK').css({"background-color":"#ccffcc","border":"1px solid #99ff99","padding":"4px","width":"130px","margin-left":"6px"});
+									$(".pk-form-message").
+									text('This key is OK').
+									css({"background-color":"#ccffcc","border":"1px solid #99ff99","padding":"4px","width":"130px","margin-left":"6px"}).
+									show();
 									
 									$("#edit-project-external-key").val(($("#edit-project-external-key").val()).toUpperCase());
 									

@@ -283,19 +283,19 @@ class timetracker_admin{
 		$part = explode(',', $string);
 		$matches = array();
 	  
-		$result = db_query_range("SELECT project_external_key FROM {timetracker_projects} WHERE LOWER(project_external_key) LIKE LOWER('%s%%')", $pkid, 0, 10);
+		$result = db_query("SELECT * FROM {timetracker_projects} WHERE project_external_key = '%s'", array(strtoupper($pkid)));
 		$check_affected = db_affected_rows();
 		
 		if($check_affected > 0)
 		{
-		   $matches = 1;
+		   $ok = 1;
 		}
 		else
 		{
-			$matches = 0;
+			$ok = 0;
 		}		
 		
-		drupal_json($matches);
+		drupal_json($check_affected);
 		
 		exit();
 	}

@@ -968,8 +968,9 @@ function timetracker_projects_edit_()
 	$form['add']['project_external_key'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Project key'),
-		'#default_value' => html_entity_decode($project_info['project_external_key']),
-		'#description' => t('This is the suffix for the project code and must be unique. Example: if your project is named Admin then example: "ADM"')
+		'#default_value' => $project_info['project_external_key'],
+		'#description' => t('This is the suffix for the project code and must be unique. Example: if your project is named Admin then example: "ADM"'),
+		'#prefix' => '<div class="pk-form-message"></div>',
 	);
 	
 	$form['add']['project_desc'] = array(

@@ -120,6 +120,43 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
                 }
              
             });
+            ////////////////////////////////////////////////////////////////////
+            // check for unique project key
+            
+            $("#edit-project-external-key").keypress(function(){
+            		$.ajax({
+							type: "POST",
+							dataType: "html",
+							url: "../project_unique_key_autocomplete",
+							data:{
+								pkid:$('input#edit-project-external-key').val()
+							},
+							cache: false,
+							success: function(result){
+							
+								if(result == 1)
+								{
+									$(".pk-form-message").text('Not a unique key.').css({"background-color":"#ffcccc","border":"1px solid #ff9999","padding":"4px","width":"130px","margin-left":"6px"});
+									
+									$(".form-submit").attr("disabled", "disabled");
+									
+									return false;
+								}
+								else
+								{
+									$(".pk-form-message").text('This key is OK').css({"background-color":"#ccffcc","border":"1px solid #99ff99","padding":"4px","width":"130px","margin-left":"6px"});
+									
+									$(".form-submit").attr("disabled", "");
+									
+									return false;
+								}
+									
+							
+							}
+					});
+            
+            
+            });
             
             ////////////////////////////////////////////////////////////////////
             

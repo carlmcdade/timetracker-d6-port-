@@ -277,6 +277,29 @@ class timetracker_admin{
         return _view('default', $variables);
     }
     
+    function project_unique_key_autocomplete($string = '') 
+	{
+	    $pkid = $_POST['pkid'];
+		$part = explode(',', $string);
+		$matches = array();
+	  
+		$result = db_query_range("SELECT project_external_key FROM {timetracker_projects} WHERE LOWER(project_external_key) LIKE LOWER('%s%%')", $pkid, 0, 10);
+		$check_affected = db_affected_rows();
+		
+		if($check_affected > 0)
+		{
+		   $matches = 1;
+		}
+		else
+		{
+			$matches = 0;
+		}		
+		
+		drupal_json($matches);
+		
+		exit();
+	}
+    
     function project_edit()
     {
     	// title for content
@@ -349,7 +372,7 @@ class timetracker_admin{
     	$pr_name = check_plain($_POST['project_name']);
     	$pr_desc = check_plain($_POST['project_desc']);
     	$pr_group = check_plain($_POST['project_group']);
-    	$pr_key = check_plain($_POST['project_external_key']);
+    	$pr_key = $_POST['project_external_key'];
     	$pr_status = check_plain($_POST['project_status']);
 
 		// check to see if project exists then update in both the tables				

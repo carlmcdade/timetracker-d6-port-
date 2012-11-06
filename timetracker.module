@@ -904,11 +904,14 @@ function timetracker_projects_edit_()
 	// if we are on the edit page fill the values
 	$pid = check_plain(arg(3));
 	
-	$project = db_fetch_array(db_query("SELECT td.tid, td.name, td.description, tt.project_external_key, tt.created, tt.project_hours, g.project_group_name, g.project_group_prefix, s.* FROM 
-		{term_data} AS td 
-		LEFT JOIN {timetracker_projects} AS tt ON td.tid = tt.project_id 
-		LEFT JOIN {timetracker_project_groups} AS g ON g.project_group_id = tt.project_group_id 
-		LEFT JOIN {timetracker_project_status} AS s ON tt.status = s.id WHERE td.tid =%d", array( $pid )));
+	// get the term information first
+	$project_term = db_fetch_array(db_query("SELECT tid, name, description FROM {term_data} WHERE tid=%d", array(arg(3))));
+	
+	
+	$project_info = db_fetch_array(db_query("SELECT * FROM 
+		{timetracker_projects} AS tp  
+		LEFT JOIN {timetracker_project_groups} AS g ON g.project_group_id = tp.project_group_id 
+		LEFT JOIN {timetracker_project_status} AS s ON tp.status = s.id WHERE tp.project_id = %d", array(arg(3))));
 	
 	
 	// get the groups available
@@ -933,13 +936,13 @@ function timetracker_projects_edit_()
 	
 	$form['add']['project_id'] = array(
 		'#type' => 'hidden', 
-		'#default_value' => isset($project['tid']) ? $project['tid'] : '',
+		'#default_value' => isset($project_term['tid']) ? $project_term['tid'] : '',
 	);
 	
     $form['add']['project_name'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Project name'),
-		'#default_value' => html_entity_decode($project['name']),
+		'#default_value' => html_entity_decode($project_term['name']),
 	);
 	
 	if(!empty($groups))
@@ -948,7 +951,7 @@ function timetracker_projects_edit_()
 	$form['add']['project_group'] = array(
 		'#type' => 'select',
 		'#options' => $groups,
-		'#default_value' => isset($project['project_group_id']) ? $project['project_group_id'] : '',
+		'#default_value' => isset($project_info['project_group_id']) ? $project_info['project_group_id'] : '',
 		'#title' => t('Project group'),
 		'#description' => t('This will automatically add the prefix for the group. Example: choosing TTC will give "OP-"')
 	);
@@ -965,13 +968,13 @@ function timetracker_projects_edit_()
 	$form['add']['project_external_key'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Project key'),
-		'#default_value' => html_entity_decode($project['project_external_key']),
+		'#default_value' => html_entity_decode($project_info['project_external_key']),
 		'#description' => t('This is the suffix for the project code and must be unique. Example: if your project is named Admin then example: "ADM"')
 	);
 	
 	$form['add']['project_desc'] = array(
 		'#type' => 'textfield', 
-		'#default_value' => html_entity_decode($project['description']),
+		'#default_value' => html_entity_decode($project_term['description']),
 		'#title' => t('Description'),
 	);
 	
@@ -979,7 +982,7 @@ function timetracker_projects_edit_()
 		'#type' => 'select',
 		'#options' => $types,
 		'#title' => t('Project status'),
-		'#default_value' => isset($project['status']) ? $project['status'] : '',
+		'#default_value' => isset($project_info['status']) ? $project_info['status'] : '',
 		'#description' => t('Projects are automatically open unless changed here.')
 	);
 			  

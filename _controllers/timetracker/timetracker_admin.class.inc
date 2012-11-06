@@ -305,7 +305,7 @@ class timetracker_admin{
 		$term['vid'] = $voc;
 		
 		/* save to the Drupal taxonomy system which creates a term/project */
-		taxonomy_save_term($term);		
+		$new_term = taxonomy_save_term($term);		
 		
 		drupal_set_message( t('project taxonomy created') ); 
 		
@@ -314,9 +314,11 @@ class timetracker_admin{
     			
     	$term_info = taxonomy_get_term($new);
     	
-    	$project_info = db_query("INSERT INTO {timetracker_projects} 
-    		(project_id,project_group_id, project_name,project_desc,project_external_key,created,changed,status, vid 
-				VALUES(" . $term->name .",". 
+    	db_query("INSERT INTO {timetracker_projects} 
+    		(project_id,project_name,project_desc,project_group_id,project_external_key,created,changed,status, vid 
+				VALUES(" . 
+				$new .",".
+				$term->name .",". 
 				$term->description . "," . 
 				check_plain($_POST['project_group']) . "," .  
 				check_plain($_POST['project_external_key']) . "," . 
@@ -333,61 +335,68 @@ class timetracker_admin{
     	/* we may need to know who by and when a project was created */
     	global $user;
     	
-    	$voc = variable_get('timetracker_projects', NULL);			
+    	$voc = variable_get('timetracker_projects', NULL);
+    	$term_info = taxonomy_get_term($new);
     	
-    	
-    	// update the taxonomy table
-    	$term = array();
-    	$term['tid'] = check_plain($_POST['project_id']);
-		$term['name'] = check_plain($_POST['project_name']);
-		$term['description'] = check_plain($_POST['project_desc']);
-		$term['vid'] = $voc;
+    	$pr_id = check_plain($_POST['project_id']);
+    	$pr_name = check_plain($_POST['project_name']);
+    	$pr_desc = check_plain($_POST['project_desc']);
+    	$pr_group = check_plain($_POST['project_group']);
+    	$pr_key = check_plain($_POST['project_external_key']);
+    	$pr_status = check_plain($_POST['project_status']);
 
+		// check to see if project exists then update in both the tables				
+		$project_id = db_query("SELECT * FROM {term_data} AS tp WHERE tid=%d", array($pr_id));						
 		
-		/* save to the Drupal taxonomy system which creates a term/project */
-		$new_term = taxonomy_save_term($term);
-
-						
-		$project_id = db_fetch_object(db_query("SELECT * FROM {timetracker_projects} AS tp WHERE project_id=%d", array($term['tid'])));						
-		
-    	// update the timetracker project table
-    	if(is_object($project_id))
-    	{
+		// Since we are updating make sure the term actually exists in both tables
+		if($project_id != FALSE)
+		{
+			$project_term = db_query("UPDATE {term_data} 
+				SET name ='" . $pr_name . "'," . 
+					"description ='" . $pr_desc  . "'" . 
+					" WHERE tid= %d", array($pr_id));
+			
+			$project_term_check = db_affected_rows();
+			
+			// update the timetracker project table
 			$project_info = db_query("UPDATE {timetracker_projects} 
-				SET (
-				project_name =" . $term->name . "," . 
-				"project_desc =" . $term->description  . "," . 
-				"project_group_id =" . check_plain($_POST['project_group']) . "," . 
-				"project_external_key =" . check_plain($_POST['project_external_key']) . ","  .
-				"changed =" . date("Y-m-d H:i:s") . "," . 
-				"status =" . check_plain($_POST['project_status']) . ")" .
-				" WHERE project_id= %d", array($term->tid));
-					
+				SET
+					project_name ='" . $pr_name . "'," . 
+					"project_desc ='" . $pr_desc  . "'," . 
+					"project_group_id ='" . $pr_group . "'," . 
+					"project_external_key ='" . $pr_key . "',"  .
+					"changed ='" . date("Y-m-d H:i:s") . "'," . 
+					"status ='" . $pr_status . "'" .
+					" WHERE project_id= %d", array($pr_id));
+			
+			$project_info_check = db_affected_rows();
+			
+			// if the project information does not synch or exist then create it
+			if($project_info_check == FALSE)
+			{
+				db_query("INSERT INTO {timetracker_projects} 
+				(project_id,project_name,project_desc,project_group_id,project_external_key,created,changed,status, vid) 
+					VALUES(" . 
+					"'" . $pr_id ."',".
+					"'" . $pr_name ."',". 
+					"'" . $pr_desc . "'," . 
+					"'" . $pr_group . "'," .  
+					"'" . $pr_key . "'," . 
+					"'" . date("Y-m-d H:i:s") . "'," .
+					"'" . date("Y-m-d H:i:s") . "'," .
+					"'" . $pr_status . "'," .
+					"'" . $voc . "')");
+			
+			}		
+						
 			drupal_set_message(t('project updated'));
-			drupal_goto('admin/timetracker/project_edit/'. $term->tid);
-					
+			drupal_goto('admin/timetracker/project_edit/'. $pr_id);
 		}
 		else
-		{		 
-					
-			$project_info = db_query("INSERT INTO {timetracker_projects} 
-				(project_name,project_desc,project_group_id,project_external_key,created,changed,status, vid) 
-				VALUES('" . $term['name'] ."',". 
-				"'" . $term['description'] . "'," . 
-				"'" . check_plain($_POST['project_group']) . "'," .  
-				"'" . check_plain($_POST['project_external_key']) . "'," . 
-				"'" . date("Y-m-d H:i:s") . "'," .
-				"'" . date("Y-m-d H:i:s") . "'," .
-				"'" . check_plain($_POST['project_status']) . "'," .
-				$voc . ")");
-					
-			drupal_set_message( t('project and taxonomy tables syncronised.'));
-			drupal_goto('admin/timetracker/project_edit/'. $new_term['tid']);
-				
-		}		
-		
-		 
-		
+		{
+			drupal_set_message(t('That project did not exist. You can create it here.'));
+			drupal_goto('admin/timetracker/projects');
+		}
 		
     }
     

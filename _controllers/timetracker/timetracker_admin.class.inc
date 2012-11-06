@@ -283,7 +283,7 @@ class timetracker_admin{
 		$part = explode(',', $string);
 		$matches = array();
 	  
-		$result = db_query_range("SELECT project_external_key FROM {timetracker_projects} WHERE LOWER(project_external_key) LIKE LOWER('%s%')", $pkid, 0, 10);
+		$result = db_query_range("SELECT project_external_key FROM {timetracker_projects} WHERE LOWER(project_external_key) LIKE LOWER('%s%%')", $pkid, 0, 10);
 		$check_affected = db_affected_rows();
 		
 		if($check_affected > 0)

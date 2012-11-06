@@ -942,7 +942,7 @@ function timetracker_projects_edit_()
     $form['add']['project_name'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Project name'),
-		'#default_value' => html_entity_decode($project_term['name']),
+		'#default_value' => $project_term['name'],
 	);
 	
 	if(!empty($groups))
@@ -968,13 +968,13 @@ function timetracker_projects_edit_()
 	$form['add']['project_external_key'] = array(
 		'#type' => 'textfield', 
 		'#title' => t('Project key'),
-		'#default_value' => html_entity_decode($project_info['project_external_key']),
+		'#default_value' => strtoupper($project_info['project_external_key']),
 		'#description' => t('This is the suffix for the project code and must be unique. Example: if your project is named Admin then example: "ADM"')
 	);
 	
 	$form['add']['project_desc'] = array(
 		'#type' => 'textfield', 
-		'#default_value' => html_entity_decode($project_term['description']),
+		'#default_value' => $project_term['description'],
 		'#title' => t('Description'),
 	);
 	
@@ -1024,9 +1024,7 @@ function timetracker_groups_add_()
 		$op = t('Update group');
 		$group = db_fetch_array(db_query("SELECT * FROM {timetracker_project_groups} WHERE project_group_id=%d",array($gid)));
 		$db_op = 'group_update';
-		
-		
-		
+				
 		$collapsed = FALSE;
 		
 	}

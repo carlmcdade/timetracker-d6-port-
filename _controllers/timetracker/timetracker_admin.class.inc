@@ -297,11 +297,18 @@ class timetracker_admin{
     	/* we may need to know who by and when a project was created */
     	global $user;
     	
-    	$voc = variable_get('timetracker_projects', NULL);	
+    	$voc = variable_get('timetracker_projects', NULL);
+    	
+    	$pr_id = check_plain($_POST['project_id']);
+    	$pr_name = check_plain($_POST['project_name']);
+    	$pr_desc = check_plain($_POST['project_desc']);
+    	$pr_group = check_plain($_POST['project_group']);
+    	$pr_key = check_plain($_POST['project_external_key']);
+    	$pr_status = check_plain($_POST['project_status']);
 
     	$term = array();
-		$term['name'] = check_plain($_POST['project_name']);
-		$term['description'] = check_plain($_POST['project_desc']);
+		$term['name'] = $pr_name;
+		$term['description'] = $pr_desc;
 		$term['vid'] = $voc;
 		
 		/* save to the Drupal taxonomy system which creates a term/project */
@@ -315,16 +322,16 @@ class timetracker_admin{
     	$term_info = taxonomy_get_term($new);
     	
     	db_query("INSERT INTO {timetracker_projects} 
-    		(project_id,project_name,project_desc,project_group_id,project_external_key,created,changed,status, vid 
+    		(project_id,project_name,project_desc,project_group_id,project_external_key,created,changed,status, vid) 
 				VALUES(" . 
 				$new .",".
 				$term->name .",". 
 				$term->description . "," . 
-				check_plain($_POST['project_group']) . "," .  
-				check_plain($_POST['project_external_key']) . "," . 
+				strtoupper($pr_group) . "," .  
+				strtoupper($pr_key) . "," . 
 				date("Y-m-d H:i:s") . "," .
 				date("Y-m-d H:i:s") . "," .
-				check_plain($_POST['project_status']) . "," .
+				$pr_status . "," .
 				$voc );
 				
 		drupal_set_message( t('project added to timetracker') ); 
@@ -363,8 +370,8 @@ class timetracker_admin{
 				SET
 					project_name ='" . $pr_name . "'," . 
 					"project_desc ='" . $pr_desc  . "'," . 
-					"project_group_id ='" . $pr_group . "'," . 
-					"project_external_key ='" . $pr_key . "',"  .
+					"project_group_id ='" . strtoupper($pr_group) . "'," . 
+					"project_external_key ='" . strtoupper($pr_key) . "',"  .
 					"changed ='" . date("Y-m-d H:i:s") . "'," . 
 					"status ='" . $pr_status . "'" .
 					" WHERE project_id= %d", array($pr_id));
@@ -380,8 +387,8 @@ class timetracker_admin{
 					"'" . $pr_id ."',".
 					"'" . $pr_name ."',". 
 					"'" . $pr_desc . "'," . 
-					"'" . $pr_group . "'," .  
-					"'" . $pr_key . "'," . 
+					"'" . strtoupper($pr_group) . "'," .  
+					"'" . strtoupper($pr_key) . "'," . 
 					"'" . date("Y-m-d H:i:s") . "'," .
 					"'" . date("Y-m-d H:i:s") . "'," .
 					"'" . $pr_status . "'," .

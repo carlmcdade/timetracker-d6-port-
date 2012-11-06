@@ -134,11 +134,13 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 							cache: false,
 							success: function(result){
 							
-								if(result == 1)
+								if((result == 1) || ($("#edit-project-external-key").val() == ''))
 								{
 									$(".pk-form-message").text('Not a unique key.').css({"background-color":"#ffcccc","border":"1px solid #ff9999","padding":"4px","width":"130px","margin-left":"6px"});
 									
-									$(".form-submit").attr("disabled", "disabled");
+									$("#edit-project-external-key").val(($("#edit-project-external-key").val()).toUpperCase());
+									
+									$("#edit-submit").attr("disabled", true);
 									
 									return false;
 								}
@@ -146,10 +148,13 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
 								{
 									$(".pk-form-message").text('This key is OK').css({"background-color":"#ccffcc","border":"1px solid #99ff99","padding":"4px","width":"130px","margin-left":"6px"});
 									
-									$(".form-submit").attr("disabled", "");
+									$("#edit-project-external-key").val(($("#edit-project-external-key").val()).toUpperCase());
 									
-									return false;
+									$("#edit-submit").attr("disabled", "");
+									
 								}
+								
+								
 									
 							
 							}

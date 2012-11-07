@@ -126,8 +126,8 @@ class timetracker_admin{
 								  $record->project_hours,
 								  $record->event_date,
 								  $record->created,
-								  l(t('delete'), 'admin/' . APP_MODULE .'/delete_time/'.$record->id, array('attributes' => array('class' => 'admin-delete-time', 'id' => 'del-' . $record->id))),
-								  l(t('update'), 'admin/' . APP_MODULE .'/update_time/'.$record->id, array('attributes' => array('class' => 'admin-update-time', 'id' => 'upd-' . $record->id))) 
+								  l(t('delete'), 'admin/' . APP_MODULE .'/entry_delete/'.$record->id, array('attributes' => array('class' => 'admin-delete-time', 'id' => 'del-' . $record->id))),
+								  l(t('update'), 'admin/' . APP_MODULE .'/entry_update/'.$record->id, array('attributes' => array('class' => 'admin-update-time', 'id' => 'upd-' . $record->id))) 
 					  
 								  ),
 							  'id' => 'row-'.$record->id,

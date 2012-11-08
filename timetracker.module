@@ -376,7 +376,14 @@ function timetracker_menu()
 		'description' => 'Settings to be used in project listings',
 		'page callback' => '_controller',
 		'access arguments' => array('administer timetracker'),
-	  ); 
+	  );
+	  
+	  $items['user/1/edit/'. APP_MODULE] = array(
+	  	  	'title' => 'Timetracker',
+	  	  	'description' => 'Settings for the management of work hours and periods',
+	  	  	'page callback' => '_controller',
+	  	  	'access arguments' => array('use timetracker')
+	  	  );
 	  
     return $items;
 

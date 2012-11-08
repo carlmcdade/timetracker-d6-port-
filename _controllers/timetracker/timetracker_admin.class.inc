@@ -88,7 +88,7 @@ class timetracker_admin{
     	$table_header = array(
 					array('data' => 'ID', 'field' => 'id', 'sort' => 'asc'),
 					array('data' => 'Task', 'field' => 'project_user_task'),
-					array('data' => 'Name', 'field' => 'project_name'),
+					array('data' => 'Project', 'field' => 'project_name'),
 					array('data' => 'User', 'field' => 'user_id'),
 					array('data' => 'Hours', 'field' => 'project_hours'),
 					array('data' => 'Event', 'field' => 'event_date'),

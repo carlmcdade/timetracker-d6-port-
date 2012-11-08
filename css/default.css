@@ -313,6 +313,21 @@ div.working-indicator
     margin: 10px 10px 0px 0px;
 }
 
+a.delete-cancel
+{
+    border-color: #DDDDDD #DDDDDD #CCCCCC;
+    border-style: solid;
+    border-width: 1px;
+    color: #333333;
+    cursor: pointer;
+    font-weight: normal;
+    padding: 3px 10px;
+    text-align: center;
+    text-decoration: none;
+    margin: 0px 6px;
+    
+}
+
 html.js input.throbbing 
 { 
 	background:transparent url('../images/indicator.gif') 10px 40px no-repeat; 

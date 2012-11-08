@@ -643,7 +643,7 @@ class timetracker_admin{
     	// check permissions
     	
     	// set form
-    	$output = drupal_get_form('timetracker_entry_delete_form');
+    	$output = drupal_get_form('timetracker_entry_delete_confirm');
     	
     	return $output;
     	
@@ -704,7 +704,26 @@ class timetracker_admin{
     function entry_delete_action()
     {
     	//
-    	db_query();
+    	$id = $_POST['event_id'];
+    	
+    	$event_delete = db_query("DELETE FROM {timetracker_project_events} WHERE id = %d", array($id));
+		  
+		$event_info_check = db_affected_rows();
+		
+		if($event_info_check > 0)
+		{
+			//
+			drupal_set_message(t('The entry was deleted.'));
+			drupal_goto('admin/timetracker/reports');
+		}
+		else
+		{
+			//
+			//
+			drupal_set_message(t('There was an error while trying to delete the entry.'));
+			drupal_goto('admin/timetracker/entry_delete/' . $id);
+			
+		}
     }
     
     

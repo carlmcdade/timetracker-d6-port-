@@ -1120,7 +1120,6 @@ function timetracker_entry_update_form()
 	
 	$form['event_id'] = array(
 		'#type' => 'hidden', 
-		'#title' => t('Task'),
 		'#value' => $record['id'],
 	);
 			  
@@ -1166,9 +1165,35 @@ function timetracker_entry_update_form()
 	return $form;
 }
 
-function timetracker_entry_delete_form()
+function timetracker_entry_delete_confirm()
 {
-	//
+	//;
+	
+
+	$form['clear'] = array(
+		'#type' => 'markup',
+		'#value' => '<p>' . t('Do you really want to remove this permanently?') . '</p>',
+	);
+	
+	$form['event_id'] = array(
+		'#type' => 'hidden', 
+		'#value' => arg(3),
+	);
+	
+	$form['cancel'] = array(
+		'#type' => 'markup',
+		'#value' => l(t('Cancel'), referer_uri(),array('attributes' => array('class' => ' form-submit delete-cancel', 'id' => 'delete-cancel')))
+		);
+
+	
+	$form['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Delete'),
+	);
+	
+	$form['#action'] = url('admin/timetracker/entry_delete_action');
+	
+	return $form;
 }
 
 

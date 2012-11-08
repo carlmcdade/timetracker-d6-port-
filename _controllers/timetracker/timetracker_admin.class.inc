@@ -114,15 +114,18 @@ class timetracker_admin{
 			//set up data array
 			$data = '';
 			$i = 1;
+			
 			//your basic while loop to get the data
 			while($record = db_fetch_object($result))
 			{				  
-					  $row_data[] = array(
+				$owner = user_load($record->user_id);
+				
+				$row_data[] = array(
 							  'data' => array(
 								  $record->id,
 								  $record->project_user_task, 
 								  $record->project_name,
-								  $record->user_id,
+								  l($owner->name , 'user/' . $record->user_id),
 								  $record->project_hours,
 								  $record->event_date,
 								  $record->created,

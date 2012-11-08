@@ -610,15 +610,107 @@ class timetracker_admin{
     	
 		$output .= drupal_get_form('timetracker_groups_add_', 'admin/timetracker/group_save');
 		    	
-    	//group prefix
+    	// group prefix
     	
-    	//group description
+    	// group description
     	
     	// group update
     	
     	return $output;
     	
     }
+    
+    function entry_update()
+    {
+    	//
+    	global $user;
+    	
+    	// check permissions
+    	
+    	
+    	// set form
+    	$output = drupal_get_form('timetracker_entry_update_form');
+    	
+    	return $output;
+    	
+    }
+    
+    function entry_delete()
+    {
+    	//
+    	global $user;
+    	
+    	// check permissions
+    	
+    	// set form
+    	$output = drupal_get_form('timetracker_entry_delete_form');
+    	
+    	return $output;
+    	
+    }
+    
+    function entry_update_action()
+    {
+    	//
+    	// update the timetracker project table
+		global $user; 
+    	
+    	/* create select list of projects */
+		// get vocabulary as options list
+		$voc = variable_get('timetracker_projects', NULL);
+		$tree = taxonomy_get_tree($voc,0,NULL,true);
+		
+    	
+    	/* id title hours date */
+    	$user_id = check_plain($_POST['user_user']);
+    	$pid = check_plain($_POST['project_id']);
+    	$id = check_plain($_POST['event_id']);
+    	$hours = check_plain($_POST['hours_used']);
+    	$task = check_plain($_POST['user_task']);
+    	
+    	/*  get the term name */
+		$project_info = taxonomy_get_term($pid);
+		
+		//$sql = "UPDATE {timetracker_project_events} SET (project_user_task = '" . $task . "'," . "project_name = '" . $project_info_name  . "'," . "project_id = " . $project_info->tid . "," . "project_hours = $hours" . ","  . "changed = ". date("Y-m-d H:i:s") . " WHERE id = $id AND user_id = $user->uid";
+		//print $sql;
+				
+		$event_update = db_query("UPDATE {timetracker_project_events} SET 
+				project_user_task ='%s'," . 
+				"project_name = '%s'," . 
+				"project_id = %d," . 
+				"project_hours = %d" . ","  .
+				"changed = '%d'" . 
+				" WHERE id = %d", array($task,$project_info->name,$project_info->tid,$hours,date("Y-m-d H:i:s"),$id));
+		  
+		$event_info_check = db_affected_rows();
+		
+		if($event_info_check > 0)
+		{
+			//
+			drupal_set_message(t('The entry was updated'));
+			drupal_goto('admin/timetracker/reports');
+		}
+		else
+		{
+			//
+			//
+			drupal_set_message(t('There was an error while trying to update the entry.'));
+			drupal_goto('admin/timetracker/entry_update/' . $pid);
+			
+		}
+			
+    }
+    
+    function entry_delete_action()
+    {
+    	//
+    	db_query();
+    }
+    
+    
+    
+    
+    
     
     
 }

@@ -1082,6 +1082,96 @@ function timetracker_groups_add_()
 	
 }
 
+function timetracker_entry_update_form()
+{
+	//
+	
+	// get vocabulary as options list
+	$voc = variable_get('timetracker_projects', NULL);
+	$tree = taxonomy_get_tree($voc,0,NULL,true);
+			
+	$record = db_fetch_array(db_query('SELECT * FROM {timetracker_project_events} e WHERE e.id = %d', array(arg(3))));
+	
+	$owner = user_load($record['user_id']);
+	
+	foreach ($tree as $key => $term)
+	{
+		$terms[$term->tid] = $term->name;
+	}
+			
+	if(!empty($terms))
+	{
+		$terms[0] = ''; 
+		ksort($terms);
+	}
+	
+	$form['user_user'] = array(
+		'#type' => 'textfield', 
+		'#title' => t('User'),
+		'#default_value' => $owner->name,
+		'#autocomplete_path' => 'timetracker/timetracker/user_autocomplete',
+	);
+	
+	$form['user_task'] = array(
+		'#type' => 'textfield', 
+		'#title' => t('Task'),
+		'#default_value' => $record['project_user_task'],
+	);
+	
+	$form['event_id'] = array(
+		'#type' => 'hidden', 
+		'#title' => t('Task'),
+		'#value' => $record['id'],
+	);
+			  
+	if(empty($terms))
+	{
+		$terms = array(t('No projects'));
+	}
+			  
+	$form['project_id'] = array(
+		'#title' => t('Project'),
+		'#type' => 'select',
+		'#options' => $terms,
+		'#default_value' => $record['project_id'],
+		//'#description' => l(t('Add project'),'timetracker/timetracker/project_add', array('attributes' => array('id' => 'add-project'))),
+	);
+		 	  
+	$form['event_date'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Date'),
+		'#default_value' => $record['event_date'],
+		'#size' => '10',
+	);	
+			  
+	$form['hours_used'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Hours'),
+		'#size' => '4',
+		'#default_value' => $record['project_hours'],
+	);
+			  
+	$form['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => 'Save',
+	);
+			  
+	$form['clear'] = array(
+		'#type' => 'markup',
+		'#value' => '<input class="form-submit no-label clear" type="reset" value="Clear">',
+	);
+			  			
+	$form['#action'] = url('admin/timetracker/entry_update_action');
+			
+	return $form;
+}
+
+function timetracker_entry_delete_form()
+{
+	//
+}
+
+
 
 /**
 * Implementation of hook_registry_alter

@@ -213,8 +213,8 @@ div.block:hover .edit {
 
 #task-table .form-type-submit
 {
-	position: relative;
-	top:19px;
+	text-align:center;
+	width:100%;
 }
 
 #task-table tr td

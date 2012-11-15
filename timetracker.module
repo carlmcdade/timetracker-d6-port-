@@ -497,14 +497,21 @@ function timetracker_mytime_()
 			  
 			  $form['hours_used'] = array(
 				'#type' => 'textfield', 
-				'#title' => t('Hours'),
+				'#title' => t('Time'),
 				'#size' => '4',
+			  );
+			  
+			  $form['time_format'] = array(
+				'#type' => 'radios', 
+				'#title' => t('Period'),			
+				'#options' => array('%', 'hours'),
+				'#default_value' => 0
 			  );
 			  
 			  $form['submit'] = array(
 				'#type' => 'submit', 
 				'#value' => 'Save',
-				'#prefix' => '<div class="form-item form-type-submit">',
+				'#prefix' => '</td></tr><tr><td><div class="form-item form-type-submit">',
 				'#suffix' => ''
 			  );
 			  

@@ -122,24 +122,58 @@ class timetracker{
         
     }
     
-function user_autocomplete($string = '') 
-{
-  
-	$part = explode(',', $string);
-	$matches = array();
-  
-    $result = db_query_range("SELECT uid,name FROM {users} WHERE LOWER(name) LIKE LOWER('%s%%')", $part[2], 0, 10);
-    while ($user = db_fetch_object($result)) {
-      $matches[$user->uid] = check_plain($user->name);
+    function user_settings_form()
+    {
+    	//
+    	$output = drupal_get_form('timetracker_mytime_settings');
+    	    	
+    	
+    	return $output;
+    	
     }
     
-    drupal_json($matches);
+    function user_settings()
+    {
+    	//
+    	global $user;
+    	
+    	$interval = $_POST['max_hours'];
+    	
+    	if($interval == '' || $interval > 40)
+    	{
+    		drupal_set_message(t('The maximum number of hours can not be empty or more than 40 hours per week.') . $interval);
+    		
+    		drupal_goto('user/'. $user->uid . '/timetracker');
+    	}
+    	else
+    	{
+    	
+    		variable_set('max_for_'. $user->uid, $interval);
+    	
+    		drupal_set_message(t('The maximum number of hours you can work without overtime is set to:') . $interval);
+    	
+    		drupal_goto(APP_MODULE . '/timetracker/user');
+    	}
+    	
+    }
     
-    exit();
-}
+    function user_autocomplete($string = '') 
+    {  
+		$part = explode(',', $string);
+		$matches = array();
+	  
+		$result = db_query_range("SELECT uid,name FROM {users} WHERE LOWER(name) LIKE LOWER('%s%%')", $part[2], 0, 10);
+		while ($user = db_fetch_object($result)) {
+		  $matches[$user->uid] = check_plain($user->name);
+		}
+		
+		drupal_json($matches);
+		
+		exit();
+    }
     
-function dailyreport($today = FALSE, $date = NULL, $previous = array())
-{
+	function dailyreport($today = FALSE, $date = NULL, $previous = array())
+	{
     	global $user;
     	
     	
@@ -1317,6 +1351,22 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
     	
     	/* clean user input */
     	$event_date = $_POST['event_date'];
+    	
+    	
+    	/* get the time format and convert later */
+    	$time_format = $_POST['time_format'];
+    	
+    	
+    	switch($time_format)   		
+    	{
+    	case 'percentage':
+    		
+    		
+    		break;
+    		
+    	case 'hours':
+    		break;
+    	}
     	   	
     	
     	/* check for first entry */
@@ -1344,10 +1394,13 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
 				"'" . $project_info->name . "'," . 
 				"'" . $user_task . "'," .  
 				"'" . $event_date . "'," . 
-				"'" . $project_hours . "'," . 
+				"'" . self::convert_mytime($project_hours, $time_format) . "'," . 
 				"'" . date("Y-m-d H:i:s") . "'," .
 				"'" . date("Y-m-d H:i:s") . "')");
-    	   	
+		
+		
+    	$message = t('A new record ('. $newid.') for '.$event_date.' has been added.');
+		  	
 				
 		$newid = db_last_insert_id('timetracker_project_events', 'id');
 		
@@ -1371,7 +1424,6 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
 			$total_hours += $record->project_hours;
 		}
 		
-		$message = t('A new record ('. $newid.') for '.$event_date.' has been added.');
 		
 		print $event_date.'}{'. 
 		self::dailyreport($mode, $event_date) .'}{' . 
@@ -1526,6 +1578,53 @@ function dailyreport($today = FALSE, $date = NULL, $previous = array())
     	{
     		print t('Row not updated - error in information sent to the system. Please contact the administrator.') ;
     	}
+    }
+    
+    function convert_mytime($time, $type)
+    {
+    	global $user;
+    	
+    	// get the users max time for the week
+    	
+    	$max_time = variable_get('max_for_'. $user->uid, NULL);
+    	
+    	$interval = '';
+    	
+    	switch($type)
+    	{
+    	case 'percentage':
+    		
+    		if(preg_match("#\.#i", $time) || $time > 100)
+    		{
+    			//
+    			$time = ($max_time * ($time));
+    		}
+    		elseif()
+    		{
+    		
+    			$time = ($max_time * ('0.'.$time));
+    		}
+    		
+    		break;
+    		
+    	case 'hours':
+    		 
+    		
+    		if(preg_match("#\.#i", $time) || $time > 24)
+    		{
+    			//
+    			$time = ($max_time * ($time));
+    		}
+    		elseif()
+    		{
+    		
+    			$time = ($max_time * ('0.'.$time));
+    		}
+    		
+    		break;
+    	}
+    	
+    	return $time;
     }
     
     

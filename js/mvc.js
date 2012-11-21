@@ -7,13 +7,25 @@ Drupal.behaviors.modulename_subidentifier = function(context) {
      		////////////////////////////////////////////////////////////////////
      		
      		$("#edit-hours-used").blur( function () {
+     				
+     			var time_format = $("input[name='time_format']:checked").val();
+     			
 				var textBoxVal=$(this).val();
-				if(textBoxVal > 24)
+				
+				if((time_format == 'hours') && textBoxVal > 24)
 				{
-					alert("Error you cannot work more than 24 hours in one day!");
+					alert("Error: You cannot work more than 24 hours in one day!" + time_format);
 					$(textBoxVal).focus();
 					return false;
 				}
+				
+				if((time_format == 'percentage') && textBoxVal > 100)
+				{
+					alert("Error: You cannot work more than 100% in one day!" + time_format);
+					$(textBoxVal).focus();
+					return false;
+				}
+				
 			});
      		
      		////////////////////////////////////////////////////////////////////

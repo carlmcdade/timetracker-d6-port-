@@ -102,6 +102,7 @@ function _controller()
     $action =  strtolower(arg(2));
     
     
+    
     // internal admin url
     if(arg(1) == 'admin')
     {
@@ -125,16 +126,20 @@ function _controller()
     	}
     }
     
+    // override uri if func_arg used
     
-
-    // URI items after the /controller/action are loaded into the function as parameters
-    $arguments = func_get_args();
+    $args = func_get_args();
     
-    // iterate the parameters but skip the first two as they are the controller and action
-    //
-    $args = implode(',' , $arguments);
+    if(!empty($args) && arg(0) != APP_MODULE)
+    {
+    	//
+    	$class =  strtolower($args[1]);
+    	$action =  strtolower($args[2]);
+    }
+    
     
     $controller = new $class();
+    
     if(method_exists($controller, $action))
     {
     	return $controller->$action($args); // send string of arguments
@@ -370,20 +375,15 @@ function timetracker_menu()
 	  
 	  
 	 // let the user set their parameters in their profile 
-	 // Need at least one child item before your section will appear.
-	  $items['user/'. APP_MODULE .'/settings'] = array(
-		'title' => 'Timetracker',
-		'description' => 'Settings to be used in project listings',
-		'page callback' => '_controller',
-		'access arguments' => array('administer timetracker'),
-	  );
 	  
-	  $items['user/1/edit/'. APP_MODULE] = array(
-	  	  	'title' => 'Timetracker',
-	  	  	'description' => 'Settings for the management of work hours and periods',
-	  	  	'page callback' => '_controller',
-	  	  	'access arguments' => array('use timetracker')
-	  	  );
+	  $items['user/%user/timetracker'] = array(
+		'title' => 'Timetracker',
+		'page callback' => '_controller',
+		'page arguments' => array('timetracker','timetracker','user_settings_form'),
+		'description' => 'Settings for the management of work hours and periods',
+		'access arguments' => array(1),
+		'type' => MENU_LOCAL_TASK,
+	  );
 	  
     return $items;
 
@@ -444,8 +444,8 @@ function timetracker_taxonomy_term_delete($term)
 }
 
 
-function timetracker_mytime_()
-{
+	function timetracker_mytime_()
+	{
 			// get vocabulary as options list
 			$voc = variable_get('timetracker_projects', NULL);
 			$tree = taxonomy_get_tree($voc,0,NULL,true);
@@ -504,8 +504,8 @@ function timetracker_mytime_()
 			  $form['time_format'] = array(
 				'#type' => 'radios', 
 				'#title' => t('Period'),			
-				'#options' => array('%', 'hours'),
-				'#default_value' => 0
+				'#options' => array('percentage' => '%', 'hours' => 'hours'),
+				'#default_value' => 'percentage'
 			  );
 			  
 			  $form['submit'] = array(
@@ -533,10 +533,33 @@ function timetracker_mytime_()
 			}
 			  
 		return $form;
-}
+	}
 
-function timetracker_mytime_update_()
-{
+	function timetracker_mytime_settings()
+	{
+		//
+		global $user;
+		
+		$form['max_hours'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Weekly max'),
+				'#default_value' => variable_get('max_for_' . $user->uid, NULL),
+				'#description' => t('Set the maximum amount of hours you work per week.'),
+			  );
+		
+		$form['submit'] = array(
+			'#type' => 'submit', 
+			'#value' => 'Submit',
+		);
+		
+		$form['#action'] = url('timetracker/timetracker/user_settings');
+		
+		return $form;
+    	
+	}
+
+	function timetracker_mytime_update_()
+	{
 			// get vocabulary as options list
 			$voc = variable_get('timetracker_projects', NULL);
 			$tree = taxonomy_get_tree($voc,0,NULL,true);
@@ -594,127 +617,127 @@ function timetracker_mytime_update_()
 			  $form['#action'] = url('timetracker/timetracker/mytime_update');
 			  
 		return $form;
-}
+	}
 
 
-function timetracker_myreports_()
-{
-	global $user;		
-	
-	// get vocabulary as options list
-	$voc = variable_get('timetracker_projects', NULL);
-	$tree = taxonomy_get_tree($voc,0,NULL,true);
-	$terms = array();
-	
-	
-			
-	foreach ($tree as $key => $term)
+	function timetracker_myreports_()
 	{
-		$terms[$term->tid] = $term->name;
-		$tids[] = $term->tid;
-	}
-	
-	if(!empty($terms))
-	{
-		$terms['all'] = t('- all -');
-		ksort($terms);
-	
-	}
+		global $user;		
 		
-	$project = $tids[0];
-	
-	$result = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC', array($user->uid, $project));
-	  
-    /* form with table display */
-    
-			  
-    $form['start_date'] = array(
-				'#type' => 'textfield', 
-				'#title' => t('Start Date'),
-				'#size' => '10',
-				'#prefix' => '<table><tr><td>',
-				'#suffix' => '</td>'
-			  );
-	
-	$form['end_date'] = array(
-				'#type' => 'textfield', 
-				'#title' => t('End Date'),
-				'#size' => '10',
-				'#prefix' => '<td>',
-				'#suffix' => '</td>'
-			  );
-	
-	$form['user_id'] = array(   
-				'#type' => 'textfield', 
-				'#title' => t('User'),
-				'#autocomplete_path' => 'timetracker/timetracker/user_autocomplete', 
-				'#prefix' => '<td class="no-label">',
-				'#suffix' => '</td>'
-				); 
-    
-    $form['my_projects_id'] = array(
-				'#type' => 'select',
-				'#title' => t('Projects'),
-				'#options' => $terms,
-				'#default_value' => $terms[0],
-				'#prefix' => '<td>',
-				'#suffix' => '</td></tr>'
-			  );
-	
-	
-			  
-	$form['submit'] = array(
-			  	 '#type' => 'submit', 
-			  	 '#value' => t('Show report'),
-			  	 '#submit' => array('Submit'),
-			  	 '#prefix' => '<tr><td colspan="4" align="center" class="no-label">',
-				 '#suffix' => ''
-			  );
-	
-	$form['clear'] = array(
-			  	 '#type' => 'markup', 
-			  	 '#value' => '<input class="form-submit no-label clear" type="reset" value="Clear">',
-			  	 '#prefix' => '',
-				 '#suffix' => '</td></tr></table>'
-			  );
-			  
-	$form['#action'] = url('timetracker/timetracker/myreport');
-			  
-	$markup = '<div id="output"></div>'; 
+		// get vocabulary as options list
+		$voc = variable_get('timetracker_projects', NULL);
+		$tree = taxonomy_get_tree($voc,0,NULL,true);
+		$terms = array();
+		
+		
+				
+		foreach ($tree as $key => $term)
+		{
+			$terms[$term->tid] = $term->name;
+			$tids[] = $term->tid;
+		}
+		
+		if(!empty($terms))
+		{
+			$terms['all'] = t('- all -');
+			ksort($terms);
+		
+		}
+			
+		$project = $tids[0];
+		
+		$result = db_query('SELECT * FROM {timetracker_project_events} e WHERE e.user_id = %d AND e.project_id = %d ORDER BY created DESC', array($user->uid, $project));
+		  
+		/* form with table display */
+		
 				  
-	$form['table'] = array(
-				'#type' => 'markup', 
-				'#value' => $markup,
-			  );
-			  
-	return $form;
+		$form['start_date'] = array(
+					'#type' => 'textfield', 
+					'#title' => t('Start Date'),
+					'#size' => '10',
+					'#prefix' => '<table><tr><td>',
+					'#suffix' => '</td>'
+				  );
+		
+		$form['end_date'] = array(
+					'#type' => 'textfield', 
+					'#title' => t('End Date'),
+					'#size' => '10',
+					'#prefix' => '<td>',
+					'#suffix' => '</td>'
+				  );
+		
+		$form['user_id'] = array(   
+					'#type' => 'textfield', 
+					'#title' => t('User'),
+					'#autocomplete_path' => 'timetracker/timetracker/user_autocomplete', 
+					'#prefix' => '<td class="no-label">',
+					'#suffix' => '</td>'
+					); 
+		
+		$form['my_projects_id'] = array(
+					'#type' => 'select',
+					'#title' => t('Projects'),
+					'#options' => $terms,
+					'#default_value' => $terms[0],
+					'#prefix' => '<td>',
+					'#suffix' => '</td></tr>'
+				  );
+		
+		
+				  
+		$form['submit'] = array(
+					 '#type' => 'submit', 
+					 '#value' => t('Show report'),
+					 '#submit' => array('Submit'),
+					 '#prefix' => '<tr><td colspan="4" align="center" class="no-label">',
+					 '#suffix' => ''
+				  );
+		
+		$form['clear'] = array(
+					 '#type' => 'markup', 
+					 '#value' => '<input class="form-submit no-label clear" type="reset" value="Clear">',
+					 '#prefix' => '',
+					 '#suffix' => '</td></tr></table>'
+				  );
+				  
+		$form['#action'] = url('timetracker/timetracker/myreport');
+				  
+		$markup = '<div id="output"></div>'; 
+					  
+		$form['table'] = array(
+					'#type' => 'markup', 
+					'#value' => $markup,
+				  );
+				  
+		return $form;
 	
-}
+	}
 
-function timetracker_myreports_csv_()
-{
-	// Drupal still has a bug that creates type submit rather than button
-			  $form['export'] = array(
-				'#type' => 'item', 
-				'#markup' => '<input type="button" class="form-submit" value="Export report" name="export" id="edit-export">',
-			  );
-			  
-			  $form['my_report_id'] = array(
-				'#type' => 'hidden',
-				'#attributes' => array('id' => 'my-report-id')
-			  );
-			  
-			  $form['#action'] = url('timetracker/timetracker/myreport_csv');
-			  
-	return $form;
-}
+	function timetracker_myreports_csv_()
+	{
+		// Drupal still has a bug that creates type submit rather than button
+				  $form['export'] = array(
+					'#type' => 'item', 
+					'#markup' => '<input type="button" class="form-submit" value="Export report" name="export" id="edit-export">',
+				  );
+				  
+				  $form['my_report_id'] = array(
+					'#type' => 'hidden',
+					'#attributes' => array('id' => 'my-report-id')
+				  );
+				  
+				  $form['#action'] = url('timetracker/timetracker/myreport_csv');
+				  
+		return $form;
+	}
 
 
-function timetracker_updatetime_()
-{
-	//
-	
-}
+	function timetracker_updatetime_()
+	{
+		//
+		
+	}
 	
 function timetracker_settings_form_()
 {

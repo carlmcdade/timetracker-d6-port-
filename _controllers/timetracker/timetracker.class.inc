@@ -1594,12 +1594,12 @@ class timetracker{
     	{
     	case 'percentage':
     		
-    		if(preg_match("#\.#i", $time) || $time > 100)
+    		if(preg_match("#\.#i", $time) && $time < 100)
     		{
     			//
     			$time = ($max_time * ($time));
     		}
-    		elseif()
+    		elseif($time < 100)
     		{
     		
     			$time = ($max_time * ('0.'.$time));
@@ -1610,12 +1610,13 @@ class timetracker{
     	case 'hours':
     		 
     		
-    		if(preg_match("#\.#i", $time) || $time > 24)
+    		if(preg_match("#\.#i", $time) && ($time < 24))
     		{
     			//
     			$time = ($max_time * ($time));
+                        
     		}
-    		elseif()
+    		elseif($time < 24)
     		{
     		
     			$time = ($max_time * ('0.'.$time));
